@@ -85,6 +85,11 @@
         box-shadow: 0 18px 45px rgba(0, 0, 0, 0.32) !important;
     }
 
+    body.dark-mode .stat-card.cluster-card {
+        background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%) !important;
+        color: #ffffff !important;
+    }
+
     body.dark-mode .navbar-admin {
         background: rgba(14, 22, 18, 0.96) !important;
         border-bottom: 1px solid rgba(179, 232, 190, 0.16);

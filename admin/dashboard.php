@@ -365,6 +365,9 @@ $cluster_values = [
             margin-bottom: 20px;
             height: 100%;
             box-shadow: var(--card-shadow);
+        }
+
+        .stat-card:not(.cluster-card) {
             background: white;
         }
         
@@ -404,9 +407,17 @@ $cluster_values = [
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         
-        .cluster-card {
+        .stat-card.cluster-card {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
+        }
+
+        .stat-card.cluster-card .card-title,
+        .stat-card.cluster-card .card-text,
+        .stat-card.cluster-card .cluster-icon,
+        .stat-card.cluster-card h6,
+        .stat-card.cluster-card .top-users-list {
+            color: inherit;
         }
         
         .cluster-icon { 

@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $three_zero_cluster = isset($_POST['three_zero_cluster']) ? $_POST['three_zero_cluster'] : [];
     if (count($three_zero_cluster) != 1) {
-        $_SESSION['error'] = "Your File Size is exceeding maximum limit of 15MB.";
+        $_SESSION['error'] = "Please select exactly one 3ZERO cluster.";
         header('Location: submit_item.php');
         exit();
     }
@@ -404,993 +404,981 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenCredit - Submit Item</title>
+    <title>GreenCredit - Submit Eco-Friendly Action</title>
     <link rel="icon" href="assets/images/gc_logo_1.png" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
-    :root {
-        --primary-color: #2E8B57;
-        --primary-light: #E8F5E9;
-        --secondary-color: #FFC107;
-        --dark-color: #343A40;
-        --light-color: #F8F9FA;
-        --danger-color: #DC3545;
-    }
-    
-    body {
-        background-color: #f5f5f5;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: var(--dark-color);
-    }
-    
-    .container {
-        max-width: 800px;
-        margin-top: 30px;
-        margin-bottom: 50px;
-    }
-    
-    .card {
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-    }
-    
-    .card-header {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 20px;
-        border-bottom: none;
-    }
-    
-    .card-body {
-        padding: 30px;
-    }
-    
-    .form-label {
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: var(--dark-color);
-    }
-    
-    .form-control, .form-select {
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        padding: 10px 15px;
-        transition: all 0.3s;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 0.25rem rgba(46, 139, 87, 0.25);
-    }
-    
-    .btn-primary {
-        background-color: var(--primary-color);
-        border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-    
-    .btn-primary:hover {
-        background-color: #247a4a;
-        transform: translateY(-2px);
-    }
-    
-    .btn-secondary {
-        background-color: #6c757d;
-        border: none;
-    }
-    
-    .btn-outline-secondary {
-        border-color: #6c757d;
-        color: #6c757d;
-    }
-    
-    /* Checkbox group styling */
-    .checkbox-group {
-        border: 1px solid #ced4da;
-        border-radius: 8px;
-        padding: 15px;
-        background-color: var(--light-color);
-    }
-    
-    /* Team members styling */
-    .team-member-item {
-        padding: 10px 15px;
-        margin: 5px 0;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-    }
-    
-    .team-member-item:hover {
-        background-color: #e9ecef;
-    }
-    
-    .team-member-item.selected {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-    }
-    
-    .team-member-item i {
-        margin-right: 10px;
-    }
-    
-    .team-members-list {
-        max-height: 300px;
-        overflow-y: auto;
-        border: 1px solid #ced4da;
-        border-radius: 8px;
-        padding: 10px;
-        background-color: white;
-    }
-    
-    .confirmed-item {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        border-radius: 6px;
-        padding: 10px;
-        margin: 5px 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    
-    /* 3ZERO Cluster styling */
-    .cluster-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    
-    .cluster-option {
-        padding: 15px;
-        border: 1px solid #ced4da;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-        flex: 1;
-        min-width: 120px;
-        text-align: center;
-        background-color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .cluster-option:hover {
-        border-color: var(--primary-color);
-    }
-    
-    .cluster-option.selected {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 8px rgba(46, 139, 87, 0.2);
-    }
-    
-    .cluster-option i {
-        font-size: 24px;
-        margin-bottom: 8px;
-    }
-    
-    .cluster-option input {
-        display: none;
-    }
-    
-    /* File upload styling */
-    .file-upload-container {
-        margin-bottom: 20px;
-    }
-    
-    .file-upload-dropzone {
-        border: 2px dashed #ced4da;
-        border-radius: 10px;
-        padding: 30px;
-        text-align: center;
-        background-color: white;
-        cursor: pointer;
-        transition: all 0.3s;
-        margin-bottom: 15px;
-    }
-    
-    .file-upload-dropzone:hover {
-        border-color: var(--primary-color);
-        background-color: rgba(46, 139, 87, 0.05);
-    }
-    
-    .file-upload-dropzone.active {
-        border-color: var(--primary-color);
-        background-color: rgba(46, 139, 87, 0.1);
-    }
-    
-    .file-upload-icon {
-        font-size: 48px;
-        color: var(--primary-color);
-        margin-bottom: 15px;
-    }
-    
-    .file-upload-text {
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-    
-    .file-upload-btn {
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.3s;
-    }
-    
-    .file-upload-btn:hover {
-        background-color: #247a4a;
-    }
-    
-    .file-upload-note {
-        background-color: #f8f9fa;
-        border-left: 4px solid var(--primary-color);
-        padding: 15px;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-        border-radius: 0 6px 6px 0;
-    }
-    
-    .file-list {
-        list-style: none;
-        padding: 0;
-        margin-top: 15px;
-    }
-    
-    .file-list-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 15px;
-        background-color: white;
-        border: 1px solid #eee;
-        border-radius: 6px;
-        margin-bottom: 8px;
-    }
-    
-    .file-list-item-info {
-        display: flex;
-        align-items: center;
-    }
-    
-    .file-list-item-icon {
-        color: var(--primary-color);
-        margin-right: 10px;
-        font-size: 20px;
-    }
-    
-    .file-list-item-name {
-        font-weight: 500;
-    }
-    
-    .file-list-item-size {
-        color: #6c757d;
-        font-size: 0.85rem;
-        margin-left: 10px;
-    }
-    
-    .file-list-item-remove {
-        color: var(--danger-color);
-        cursor: pointer;
-        background: none;
-        border: none;
-        font-size: 18px;
-    }
-    
-    /* Team selection controls */
-    .team-selection-controls {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-    }
-    
-    .team-confirmed-list {
-        margin-top: 20px;
-        padding: 15px;
-        background-color: var(--light-color);
-        border-radius: 8px;
-    }
-    
-    /* Error messages */
-    .error-message {
-        color: var(--danger-color);
-        font-size: 0.85rem;
-        margin-top: 5px;
-        display: none;
-    }
-    
-    /* Points system button */
-    .points-system-btn {
-        display: inline-flex;
-        align-items: center;
-        background-color: white;
-        border: 2px solid var(--primary-color);
-        color: var(--primary-color);
-        padding: 12px 20px;
-        border-radius: 6px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s;
-        margin-bottom: 20px;
-    }
-    
-    .points-system-btn:hover {
-        background-color: var(--primary-light);
-        transform: translateY(-2px);
-        color: var(--primary-color);
-    }
-    
-    .points-system-btn i {
-        margin-right: 8px;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .card-body {
+        :root {
+            --gc-primary: #2E8B57;
+            --gc-primary-dark: #216a43;
+            --gc-primary-soft: #E8F5E9;
+            --gc-secondary: #FFC107;
+            --gc-bg: #f4f8f5;
+            --gc-card: #ffffff;
+            --gc-text: #253238;
+            --gc-muted: #6c757d;
+            --gc-border: #dfe7e2;
+            --gc-danger: #dc3545;
+            --gc-shadow: 0 12px 32px rgba(31, 90, 58, 0.10);
+            --gc-shadow-soft: 0 6px 18px rgba(31, 90, 58, 0.08);
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(46, 139, 87, 0.12), transparent 32rem),
+                linear-gradient(180deg, #f7fbf8 0%, #eef6f1 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--gc-text);
+        }
+
+        .page-wrapper {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 32px 16px 56px;
+        }
+
+        .hero-card {
+            background: linear-gradient(135deg, #2E8B57 0%, #1f6b43 100%);
+            color: #fff;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: var(--gc-shadow);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.10);
+            right: -70px;
+            top: -80px;
+        }
+
+        .hero-card::before {
+            content: "";
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(255, 193, 7, 0.16);
+            right: 110px;
+            bottom: -90px;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            margin-bottom: 14px;
+        }
+
+        .hero-title {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 10px;
+        }
+
+        .hero-text {
+            max-width: 720px;
+            color: rgba(255, 255, 255, 0.88);
+            margin-bottom: 0;
+            line-height: 1.7;
+        }
+
+        .points-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #ffffff;
+            color: var(--gc-primary);
+            border-radius: 14px;
+            padding: 12px 18px;
+            text-decoration: none;
+            font-weight: 700;
+            box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+            transition: 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .points-link:hover {
+            color: var(--gc-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(0,0,0,0.16);
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 22px;
+            align-items: start;
+        }
+
+        .form-panel,
+        .side-panel,
+        .form-section {
+            background: var(--gc-card);
+            border: 1px solid rgba(46, 139, 87, 0.12);
+            border-radius: 22px;
+            box-shadow: var(--gc-shadow-soft);
+        }
+
+        .form-panel {
+            padding: 22px;
+        }
+
+        .form-section {
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: none;
+            border-radius: 18px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .section-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: var(--gc-primary-soft);
+            color: var(--gc-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            font-size: 1.05rem;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #1f2f28;
+        }
+
+        .section-subtitle {
+            margin: 4px 0 0;
+            color: var(--gc-muted);
+            font-size: 0.88rem;
+            line-height: 1.45;
+        }
+
+        .form-label {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #263b31;
+            font-size: 0.92rem;
+        }
+
+        .form-control,
+        .form-select {
+            border: 1px solid var(--gc-border);
+            border-radius: 12px;
+            padding: 11px 14px;
+            transition: all 0.2s ease;
+            background-color: #fff;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--gc-primary);
+            box-shadow: 0 0 0 0.22rem rgba(46, 139, 87, 0.14);
+        }
+
+        .helper-text {
+            color: var(--gc-muted);
+            font-size: 0.82rem;
+            margin-top: 6px;
+        }
+
+        .info-callout {
+            background: #f7faf8;
+            border: 1px solid var(--gc-border);
+            border-left: 4px solid var(--gc-primary);
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            color: #3a4a42;
+        }
+
+        .cluster-container {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .cluster-option {
+            padding: 18px 14px;
+            border: 1.5px solid var(--gc-border);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            background: #fff;
+            min-height: 128px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .cluster-option:hover {
+            border-color: var(--gc-primary);
+            background: #fbfffc;
+            transform: translateY(-2px);
+        }
+
+        .cluster-option.selected {
+            background: var(--gc-primary);
+            color: #fff;
+            border-color: var(--gc-primary);
+            box-shadow: 0 12px 22px rgba(46, 139, 87, 0.22);
+        }
+
+        .cluster-option i {
+            font-size: 1.6rem;
+        }
+
+        .cluster-option label {
+            font-weight: 700;
+            cursor: pointer;
+            margin: 0;
+            line-height: 1.25;
+        }
+
+        .cluster-option input {
+            display: none;
+        }
+
+        .required-field::after {
+            content: " *";
+            color: var(--gc-danger);
+        }
+
+        .error-message {
+            color: var(--gc-danger);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .team-member-counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gc-primary-soft);
+            color: var(--gc-primary-dark);
+            font-weight: 800;
+            border-radius: 999px;
+            padding: 8px 14px;
+            margin-bottom: 12px;
+            font-size: 0.88rem;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .search-results {
+            position: absolute;
+            top: calc(100% + 2px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--gc-border);
+            border-radius: 0 0 14px 14px;
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: var(--gc-shadow-soft);
+        }
+
+        .search-result-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #edf2ef;
+            transition: 0.15s ease;
+        }
+
+        .search-result-item:hover {
+            background-color: #f5faf7;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .selected-members-container,
+        .team-confirmed-list {
+            margin-top: 14px;
+            border: 1px solid var(--gc-border);
+            border-radius: 16px;
+            padding: 16px;
+            background-color: #f8fbf9;
+        }
+
+        .selected-member,
+        .confirmed-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background-color: #fff;
+            border: 1px solid #e6eee9;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .selected-member-info {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .selected-member-info span,
+        .confirmed-item div {
+            word-break: break-word;
+        }
+
+        .selected-member-remove {
+            color: var(--gc-danger);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .selected-member-remove:hover {
+            background: #fff0f0;
+        }
+
+        .team-selection-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .file-upload-container {
+            margin-bottom: 16px;
+        }
+
+        .file-upload-dropzone {
+            border: 2px dashed #b9cfc1;
+            border-radius: 18px;
+            padding: 34px 24px;
+            text-align: center;
+            background: linear-gradient(180deg, #ffffff, #f8fcfa);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 14px;
+        }
+
+        .file-upload-dropzone:hover,
+        .file-upload-dropzone.active {
+            border-color: var(--gc-primary);
+            background: var(--gc-primary-soft);
+        }
+
+        .file-upload-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: var(--gc-primary-soft);
+            color: var(--gc-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 14px;
+        }
+
+        .file-upload-text {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #263b31;
+        }
+
+        .file-upload-btn {
+            background: var(--gc-primary);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .file-upload-btn:hover {
+            background: var(--gc-primary-dark);
+        }
+
+        .file-upload-note {
+            background: #fffdf4;
+            border: 1px solid #ffe8a3;
+            border-left: 4px solid var(--gc-secondary);
+            padding: 14px 16px;
+            margin-bottom: 0;
+            font-size: 0.9rem;
+            border-radius: 14px;
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 14px;
+        }
+
+        .file-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            background-color: white;
+            border: 1px solid #e6eee9;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .file-list-item-info {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .file-list-item-icon {
+            color: var(--gc-primary);
+            margin-right: 10px;
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+            flex: 0 0 auto;
+        }
+
+        .file-list-item-name {
+            font-weight: 600;
+            margin-right: 8px;
+            word-break: break-all;
+        }
+
+        .file-list-item-size {
+            color: var(--gc-muted);
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .file-list-item-remove {
+            color: var(--gc-danger);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 18px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            flex: 0 0 auto;
+        }
+
+        .file-list-item-remove:hover {
+            background: #fff0f0;
+        }
+
+        .submit-btn {
+            border-radius: 16px;
+            padding: 15px 24px;
+            font-weight: 800;
+            font-size: 1rem;
+            background: linear-gradient(135deg, var(--gc-primary), var(--gc-primary-dark));
+            border: none;
+            box-shadow: 0 12px 24px rgba(46, 139, 87, 0.25);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 30px rgba(46, 139, 87, 0.30);
+            background: linear-gradient(135deg, #349c63, #1f6b43);
+        }
+
+        .side-panel {
+            position: sticky;
+            top: 18px;
             padding: 20px;
         }
-        
-        .cluster-option {
-            min-width: 100%;
-        }
-    }
-    
-    .file-list-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    background-color: white;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    margin-bottom: 8px;
-}
 
-.file-list-item-info {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-}
-
-.file-list-item-icon {
-    color: var(--primary-color);
-    margin-right: 10px;
-    font-size: 20px;
-    width: 24px;
-    text-align: center;
-}
-
-.file-list-item-name {
-    font-weight: 500;
-    margin-right: 8px;
-    word-break: break-all;
-}
-
-.file-list-item-size {
-    color: #6c757d;
-    font-size: 0.85rem;
-    white-space: nowrap;
-}
-
-.file-list-item-remove {
-    color: var(--danger-color);
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-size: 18px;
-    margin-left: 10px;
-    padding: 0 5px;
-}
-
-.file-list-item-remove:hover {
-    color: #a71d2a;
-}
-
-    .cluster-option {
-        padding: 15px;
-        border: 1px solid #ced4da;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-        flex: 1;
-        min-width: 120px;
-        text-align: center;
-        background-color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .cluster-option.selected {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 8px rgba(46, 139, 87, 0.2);
-    }
-    
-    /* Team member counter */
-    .team-member-counter {
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-    
-    /* Description required indicator */
-    .required-field::after {
-        content: " *";
-        color: red;
-    }
-
-    /* Search box styling */
-    .search-container {
-        position: relative;
-        margin-bottom: 10px;
-    }
-    
-    .search-results {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #ced4da;
-        border-top: none;
-        border-radius: 0 0 6px 6px;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 100;
-        display: none;
-    }
-    
-    .search-result-item {
-        padding: 10px 15px;
-        cursor: pointer;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .search-result-item:hover {
-        background-color: #f8f9fa;
-    }
-    
-    .search-result-item:last-child {
-        border-bottom: none;
-    }
-    
-    .selected-members-container {
-        margin-top: 15px;
-        border: 1px solid #ced4da;
-        border-radius: 8px;
-        padding: 15px;
-        background-color: #f8f9fa;
-    }
-    
-    .selected-member {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 12px;
-        background-color: white;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        margin-bottom: 8px;
-    }
-    
-    .selected-member-info {
-        display: flex;
-        align-items: center;
-    }
-    
-    .selected-member-remove {
-        color: var(--danger-color);
-        cursor: pointer;
-        background: none;
-        border: none;
-        font-size: 16px;
-        padding: 0 5px;
-    }
-    
-    .button-59 {
-        align-items: center;
-        background-color: #fff;
-        border: 2px solid #000;
-        box-sizing: border-box;
-        color: #000;
-        cursor: pointer;
-        display: inline-flex;
-        fill: #000;
-        font-family: Inter,sans-serif;
-        font-size: 16px;
-        font-weight: 600;
-        height: 48px;
-        justify-content: center;
-        letter-spacing: -.8px;
-        line-height: 24px;
-        min-width: 140px;
-        outline: 0;
-        padding: 0 17px;
-        text-align: center;
-        text-decoration: none;
-        transition: all .3s;
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: manipulation;
-    }
-
-    .button-59:focus {
-        color: #171e29;
-    }
-
-    .button-59:hover {
-        border-color: #06f;
-        color: #06f;
-        fill: #06f;
-    }
-
-    .button-59:active {
-        border-color: #06f;
-        color: #06f;
-        fill: #06f;
-    }
-
-    @media (min-width: 768px) {
-        .button-59 {
-            min-width: 170px;
-        }
-    }
-    .submission-shell {
-        max-width: 980px;
-        background: #ffffff;
-        border: 1px solid rgba(46, 139, 87, 0.14);
-        border-radius: 18px;
-        box-shadow: 0 18px 50px rgba(31, 51, 41, 0.12);
-        padding: clamp(1.25rem, 3vw, 2.25rem);
-    }
-
-    body {
-        background:
-            linear-gradient(180deg, #f5faf6 0%, #eef7f1 52%, #f9fbfa 100%);
-    }
-
-    .submit-hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 1rem;
-        align-items: center;
-        background: linear-gradient(135deg, #1f7a49, #2E8B57);
-        color: #fff;
-        border-radius: 16px;
-        padding: clamp(1.1rem, 3vw, 1.7rem);
-        margin-bottom: 1.25rem;
-        box-shadow: 0 16px 34px rgba(46,139,87,.24);
-    }
-
-    .submit-hero h2 {
-        color: #fff !important;
-        margin: 0 0 .35rem !important;
-        text-align: left !important;
-    }
-
-    .submit-hero p {
-        margin: 0;
-        color: rgba(255,255,255,.88);
-    }
-
-    .submit-hero .button-59 {
-        background: #fff;
-        color: #1f7a49;
-        border: 0;
-        box-shadow: 0 10px 22px rgba(0,0,0,.16);
-    }
-
-    .submit-hero .button-59 a {
-        color: #1f7a49 !important;
-        font-weight: 800;
-    }
-
-    .submission-shell h2 {
-        color: #183b28;
-        font-weight: 800;
-        margin-bottom: 1rem;
-    }
-
-    .submission-shell form {
-        display: grid;
-        gap: 1rem;
-    }
-
-    .submission-shell form > .mb-3 {
-        background: #ffffff;
-        border: 1px solid #e3eee6;
-        border-radius: 14px;
-        padding: 1rem;
-        box-shadow: 0 8px 20px rgba(31, 51, 41, 0.05);
-    }
-
-    .submission-shell .mb-3 {
-        margin-bottom: 0 !important;
-    }
-
-    .submission-shell .form-label {
-        color: #22352b;
-        font-size: 0.96rem;
-    }
-
-    .submission-shell .form-control,
-    .submission-shell .form-select {
-        border-color: #dce7df;
-        border-radius: 10px;
-        min-height: 46px;
-        background: #fbfdfb;
-    }
-
-    .submission-shell .form-control:focus,
-    .submission-shell .form-select:focus {
-        border-color: #2E8B57;
-        box-shadow: 0 0 0 0.22rem rgba(46, 139, 87, 0.16);
-    }
-
-    .submission-shell .btn-primary,
-    .submission-shell .file-upload-btn {
-        border-radius: 10px;
-        box-shadow: 0 10px 22px rgba(46, 139, 87, 0.18);
-    }
-
-    .submission-shell .cluster-container {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.85rem;
-    }
-
-    .submission-shell .cluster-option {
-        border-radius: 14px;
-        min-height: 116px;
-    }
-
-    .submission-shell .file-upload-dropzone {
-        border-radius: 16px;
-        background: #f8fbf8;
-    }
-
-    .submission-shell .selected-member,
-    .submission-shell .confirmed-item,
-    .submission-shell .team-member-counter,
-    .submission-shell .file-upload-note {
-        border-radius: 12px;
-    }
-
-    body.dark-mode {
-        background:
-            radial-gradient(circle at top left, rgba(46, 139, 87, 0.16), transparent 34%),
-            #0f1411 !important;
-        color: #edf6ef;
-    }
-
-    body.dark-mode .submission-shell {
-        background: #171d19 !important;
-        color: #edf6ef !important;
-        border-color: rgba(190, 233, 205, 0.14) !important;
-        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
-    }
-
-    body.dark-mode .submission-shell h2,
-    body.dark-mode .submission-shell .form-label,
-    body.dark-mode .submission-shell label,
-    body.dark-mode .submission-shell .file-upload-text,
-    body.dark-mode .submission-shell .file-list-item-name,
-    body.dark-mode .submission-shell .team-member-counter {
-        color: #edf6ef !important;
-    }
-
-    body.dark-mode .submission-shell form > .mb-3,
-    body.dark-mode .checkbox-group,
-    body.dark-mode .team-members-container,
-    body.dark-mode .team-confirmed-list,
-    body.dark-mode .selected-members-container,
-    body.dark-mode .selected-member,
-    body.dark-mode .confirmed-item,
-    body.dark-mode .file-list-item,
-    body.dark-mode .cluster-option,
-    body.dark-mode .file-upload-dropzone,
-    body.dark-mode .file-upload-note,
-    body.dark-mode .search-results {
-        background: #1d2620 !important;
-        color: #edf6ef !important;
-        border-color: rgba(190, 233, 205, 0.14) !important;
-        box-shadow: none;
-    }
-
-    body.dark-mode .submission-shell .form-control,
-    body.dark-mode .submission-shell .form-select,
-    body.dark-mode .submission-shell textarea {
-        background: #101713 !important;
-        color: #edf6ef !important;
-        border-color: rgba(190, 233, 205, 0.18) !important;
-    }
-
-    body.dark-mode .submission-shell .form-control::placeholder,
-    body.dark-mode .submission-shell .file-list-item-size,
-    body.dark-mode .submission-shell .file-upload-note,
-    body.dark-mode .search-result-item {
-        color: #a9b8ad !important;
-    }
-
-    body.dark-mode .team-member-item,
-    body.dark-mode .search-result-item {
-        background: #171d19 !important;
-        color: #edf6ef !important;
-        border-color: rgba(190, 233, 205, 0.12) !important;
-    }
-
-    body.dark-mode .team-member-item:hover,
-    body.dark-mode .search-result-item:hover,
-    body.dark-mode .cluster-option:hover,
-    body.dark-mode .file-upload-dropzone:hover {
-        background: rgba(120, 217, 154, 0.13) !important;
-        border-color: rgba(120, 217, 154, 0.45) !important;
-    }
-
-    body.dark-mode .team-member-item.selected,
-    body.dark-mode .cluster-option.selected {
-        background: #2e8b57 !important;
-        color: #ffffff !important;
-        border-color: #78d99a !important;
-    }
-
-    body.dark-mode .submit-hero {
-        background: linear-gradient(135deg, #155c36, #1f7a49);
-        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.36);
-    }
-
-    body.dark-mode .submit-hero .button-59 {
-        background: #edf6ef;
-        color: #155c36;
-    }
-
-    @media (max-width: 768px) {
-        body {
-            background: #f7faf7;
+        .guide-card {
+            border: 1px solid #e4eee7;
+            border-radius: 18px;
+            padding: 16px;
+            background: #fff;
+            margin-bottom: 14px;
         }
 
-        body.dark-mode {
-            background: #0f1411 !important;
+        .guide-card:last-child {
+            margin-bottom: 0;
         }
 
-        .submission-shell {
-            width: calc(100% - 1rem);
-            margin-top: 1rem !important;
-            padding: 1rem;
-            border-radius: 14px;
+        .guide-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #1f2f28;
         }
 
-        .submit-hero {
-            grid-template-columns: 1fr;
-            border-radius: 14px;
+        .guide-title i {
+            color: var(--gc-primary);
         }
 
-        .submit-hero .button-59 {
-            width: 100%;
+        .points-grid {
+            display: grid;
+            gap: 8px;
         }
 
-        .submission-shell h2 {
-            font-size: 1.45rem;
-            text-align: left !important;
+        .point-pill {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f7faf8;
+            border: 1px solid #e5eee9;
+            border-radius: 12px;
+            padding: 9px 11px;
+            font-size: 0.88rem;
         }
 
-        .submission-shell .cluster-container {
-            grid-template-columns: 1fr;
+        .point-pill strong {
+            color: var(--gc-primary);
         }
 
-        .submission-shell .file-upload-dropzone {
-            padding: 1.25rem 0.85rem;
+        .mini-list {
+            padding-left: 1.1rem;
+            margin-bottom: 0;
+            color: #52635a;
+            font-size: 0.9rem;
+            line-height: 1.65;
         }
 
-        .submission-shell .selected-member,
-        .submission-shell .confirmed-item {
-            align-items: flex-start;
-            gap: 0.75rem;
+        .alert {
+            border-radius: 16px;
+            border: none;
+            box-shadow: var(--gc-shadow-soft);
         }
 
-        .submission-shell textarea {
-            min-height: 180px;
+        .mobile-only {
+            display: none;
         }
-    }
+
+        @media (max-width: 992px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .side-panel {
+                position: static;
+                order: -1;
+            }
+
+            .hero-card {
+                padding: 26px 22px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                padding: 18px 12px 40px;
+            }
+
+            .hero-card {
+                border-radius: 20px;
+            }
+
+            .hero-title {
+                font-size: 1.8rem;
+            }
+
+            .hero-actions {
+                margin-top: 18px;
+            }
+
+            .form-panel {
+                padding: 14px;
+                border-radius: 18px;
+            }
+
+            .form-section {
+                padding: 18px;
+            }
+
+            .cluster-container {
+                grid-template-columns: 1fr;
+            }
+
+            .team-selection-controls .btn {
+                width: 100%;
+            }
+
+            .file-upload-dropzone {
+                padding: 26px 18px;
+            }
+
+            .selected-member,
+            .confirmed-item,
+            .file-list-item {
+                align-items: flex-start;
+            }
+
+            .file-list-item {
+                flex-direction: column;
+            }
+
+            .file-list-item-remove {
+                align-self: flex-end;
+            }
+
+            .desktop-only {
+                display: none;
+            }
+
+            .mobile-only {
+                display: block;
+            }
+        }
     </style>
 </head>
+
 <body>
     <?php include 'includes/header.php'; ?>
 
-    <div class="container my-5 submission-shell">
-        <div class="submit-hero">
-            <div>
-                <h2 class="text-center">Submit Eco-Friendly Action</h2>
-                <p>Choose your impact level, add the right evidence, and submit for review.</p>
+    <div class="page-wrapper">
+
+        <section class="hero-card">
+            <div class="hero-content">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-8">
+                        <div class="hero-badge">
+                            <i class="fas fa-leaf"></i>
+                            GreenCredit Submission Portal
+                        </div>
+                        <h1 class="hero-title">Submit Eco-Friendly Action</h1>
+                        <p class="hero-text">
+                            Record your sustainability action, upload proof, select the relevant 3ZERO cluster,
+                            and include your team members if the activity is Medium or High Impact.
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end hero-actions">
+                        <a href="points.php" class="points-link">
+                            <i class="fas fa-star"></i>
+                            View Points System
+                        </a>
+                    </div>
+                </div>
             </div>
-            <button class="button-59">
-                <a href="points.php" style="text-decoration: none; color:rgb(210, 46, 46)">
-                    *Click here to see our Points System*
-                </a>
-            </button>
-        </div>
+        </section>
 
         <?php 
         if (isset($_SESSION['error'])) {
-            echo "<div class='alert alert-danger'>" . $_SESSION['error'] . "</div>";
+            echo "<div class='alert alert-danger mb-4'><i class='fas fa-circle-exclamation me-2'></i>" . $_SESSION['error'] . "</div>";
             unset($_SESSION['error']);
         }
         if (isset($_SESSION['success'])) {
-            echo "<div class='alert alert-success'>" . $_SESSION['success'] . "</div>";
+            echo "<div class='alert alert-success mb-4'><i class='fas fa-circle-check me-2'></i>" . $_SESSION['success'] . "</div>";
             unset($_SESSION['success']);
         }
         ?>
 
-        <form action="submit_item.php" method="POST" enctype="multipart/form-data" id="submissionForm">
-            <div class="mb-3">
-                <label for="category" class="form-label">Select Category</label>
-                <select class="form-select" id="category" name="category" required>
-                    <option value="">Select a Category</option>
-                    <option value="Low Impact">Low Impact (25 points)</option>
-                    <option value="Medium Impact">Medium Impact (50 points)</option>
-                    <option value="High Impact">High Impact (75 points)</option>
-                </select>
-            </div>
-            
-            <div class="mb-3" id="club_id_div" style="display:none;">
-                <label for="club_id" class="form-label">Club ID</label>
-                <!-- Changed from type="number" to type="text" -->
-                <input type="text" class="form-control" id="club_id" name="club_id" 
-                       pattern="[0-9\-]+" title="Only numbers and dashes are allowed"
-                       placeholder="Enter Club ID (numbers and dashes only)">
-                <small class="text-muted">Only numbers and dashes are allowed     (Example format: 123-456-789) </small>
-            </div>
+        <div class="layout-grid">
+            <main class="form-panel">
+                <form action="submit_item.php" method="POST" enctype="multipart/form-data" id="submissionForm">
 
-            <div class="mb-3">
-                <label for="action" class="form-label">Type of Action</label>
-                <select class="form-select" id="action" name="action" required>
-                    <option value="">Select an Action</option>
-                </select>
-            </div>
-            
-                        <!-- 3ZERO Cluster section -->
-            <div class="mb-3">
-                <label class="form-label">3ZERO Cluster (Select 1)
-                  <span style="color:red;">Click the edge of the box to select if you cannot click in the middle. Click once to select and another time to de-select.</span>
-                </label>
-                <div class="cluster-container">
-                    <div class="cluster-option" data-value="Zero Poverty">
-                        <i class="fas fa-hand-holding-heart"></i>
-                        <input type="radio" name="three_zero_cluster[]" value="Zero Poverty" id="zero_poverty">
-                        <label for="zero_poverty">Zero Poverty</label>
-                    </div>
-                    <div class="cluster-option" data-value="Zero Unemployment">
-                        <i class="fas fa-briefcase"></i>
-                        <input type="radio" name="three_zero_cluster[]" value="Zero Unemployment" id="zero_unemployment">
-                        <label for="zero_unemployment">Zero Unemployment</label>
-                    </div>
-                    <div class="cluster-option" data-value="Zero Net Carbon Emission">
-                        <i class="fas fa-leaf"></i>
-                        <input type="radio" name="three_zero_cluster[]" value="Zero Net Carbon Emission" id="zero_carbon">
-                        <label for="zero_carbon">Zero Net Carbon Emission</label>
-                    </div>
-                </div>
-                <div id="cluster-error" class="error-message">Please select exactly one cluster</div>
-            </div>
-
-            <!-- Team Members selection -->
-            <div class="mb-3" id="team_members_div" style="display:none;">
-                <label class="form-label">Select Team Members (1st click - select, 2nd click - deselect)
-                <strong>(You are automatically included. Do not select your own email. For Medium/High Impact, you need 2-4 additional members.)</strong></label>
-                
-                <div class="team-member-counter" id="team_counter">Selected: 1 (you) + 0 = 1/5</div>
-
-                <!-- Search Bar with Google-like functionality -->
-                <div class="search-container">
-                    <input type="text" id="team_search" class="form-control mb-2" placeholder="Start typing to search for team members...">
-                    <div class="search-results" id="search_results"></div>
-                </div>
-
-                <!-- Selected members display -->
-                <div class="selected-members-container" id="selected_members_container" style="display: none;">
-                    <h6>Selected Team Members:</h6>
-                    <div id="selected_members_list"></div>
-                </div>
-
-                <!-- Hidden inputs for selected team members -->
-                <div id="selected_team_inputs"></div>
-
-                <div class="team-selection-controls">
-                    <button type="button" id="confirm_team_btn" class="btn btn-secondary">Confirm Selection</button>
-                    <button type="button" id="edit_team_btn" class="btn btn-outline-secondary" style="display:none;">Edit Selection</button>
-                </div>
-                
-                <div id="confirmed_team_list" class="team-confirmed-list" style="display:none;">
-                    <h6>Confirmed Team Members:</h6>
-                    <div id="confirmed_team_members">
-                        <p>You (automatically included)</p>
-                    </div>
-                    <div id="additional_members_list"></div>
-                </div>
-                
-                <div id="team-error" class="text-danger mt-2" style="display:none;">Please select 2-4 additional team members for Medium/High Impact</div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Upload Proof</label>
-                
-                <div class="file-upload-container">
-                    <div id="fileDropzone" class="file-upload-dropzone">
-                        <div class="file-upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
+                    <section class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon"><i class="fas fa-clipboard-list"></i></div>
+                            <div>
+                                <h2 class="section-title">Action Details</h2>
+                                <p class="section-subtitle">Choose the impact category and the specific sustainability action.</p>
+                            </div>
                         </div>
-                        <div class="file-upload-text">
-                            <strong>Drop your files here</strong> or click to browse
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label required-field">Select Category</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Select a Category</option>
+                                    <option value="Low Impact">Low Impact (25 points)</option>
+                                    <option value="Medium Impact">Medium Impact (50 points)</option>
+                                    <option value="High Impact">High Impact (75 points)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6" id="club_id_div" style="display:none;">
+                                <label for="club_id" class="form-label required-field">Club ID</label>
+                                <input type="text" class="form-control" id="club_id" name="club_id"
+                                       pattern="[0-9\-]+" title="Only numbers and dashes are allowed"
+                                       placeholder="Example: 123-456-789">
+                                <div class="helper-text">Required for Medium and High Impact. Only numbers and dashes are allowed.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="action" class="form-label required-field">Type of Action</label>
+                                <select class="form-select" id="action" name="action" required>
+                                    <option value="">Select an Action</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-2">
-                            <small class="text-muted">Supported formats: PDF, PNG, JPG, JPEG, GIF</small>
+                    </section>
+
+                    <section class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon"><i class="fas fa-seedling"></i></div>
+                            <div>
+                                <h2 class="section-title">3ZERO Cluster</h2>
+                                <p class="section-subtitle">Select exactly one cluster that best represents your action.</p>
+                            </div>
                         </div>
-                        <button type="button" class="file-upload-btn" id="fileUploadBtn">
-                            <i class="fas fa-folder-open me-1"></i> Choose Files
-                        </button>
+
+                        <div class="cluster-container">
+                            <div class="cluster-option" data-value="Zero Poverty">
+                                <i class="fas fa-hand-holding-heart"></i>
+                                <input type="radio" name="three_zero_cluster[]" value="Zero Poverty" id="zero_poverty">
+                                <label for="zero_poverty">Zero Poverty</label>
+                            </div>
+
+                            <div class="cluster-option" data-value="Zero Unemployment">
+                                <i class="fas fa-briefcase"></i>
+                                <input type="radio" name="three_zero_cluster[]" value="Zero Unemployment" id="zero_unemployment">
+                                <label for="zero_unemployment">Zero Unemployment</label>
+                            </div>
+
+                            <div class="cluster-option" data-value="Zero Net Carbon Emission">
+                                <i class="fas fa-leaf"></i>
+                                <input type="radio" name="three_zero_cluster[]" value="Zero Net Carbon Emission" id="zero_carbon">
+                                <label for="zero_carbon">Zero Net Carbon Emission</label>
+                            </div>
+                        </div>
+
+                        <div id="cluster-error" class="error-message">Please select exactly one cluster.</div>
+                    </section>
+
+                    <section class="form-section" id="team_members_div" style="display:none;">
+                        <div class="section-header">
+                            <div class="section-icon"><i class="fas fa-user-group"></i></div>
+                            <div>
+                                <h2 class="section-title">Team Members</h2>
+                                <p class="section-subtitle">
+                                    You are automatically included. For Medium/High Impact, select 2–4 additional members.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="team-member-counter" id="team_counter">
+                            Selected: 1 (you) + 0 = 1/5
+                        </div>
+
+                        <div class="search-container">
+                            <label for="team_search" class="form-label">Search Team Members</label>
+                            <input type="text" id="team_search" class="form-control" placeholder="Start typing name or email...">
+                            <div class="search-results" id="search_results"></div>
+                        </div>
+
+                        <div class="selected-members-container" id="selected_members_container" style="display: none;">
+                            <h6 class="fw-bold mb-3">Selected Team Members</h6>
+                            <div id="selected_members_list"></div>
+                        </div>
+
+                        <div id="selected_team_inputs"></div>
+
+                        <div class="team-selection-controls">
+                            <button type="button" id="confirm_team_btn" class="btn btn-secondary">
+                                <i class="fas fa-check me-1"></i> Confirm Selection
+                            </button>
+                            <button type="button" id="edit_team_btn" class="btn btn-outline-secondary" style="display:none;">
+                                <i class="fas fa-pen me-1"></i> Edit Selection
+                            </button>
+                        </div>
+
+                        <div id="confirmed_team_list" class="team-confirmed-list" style="display:none;">
+                            <h6 class="fw-bold mb-3">Confirmed Team Members</h6>
+                            <div id="confirmed_team_members">
+                                <p class="mb-2"><i class="fas fa-user-check me-2 text-success"></i>You (automatically included)</p>
+                            </div>
+                            <div id="additional_members_list"></div>
+                        </div>
+
+                        <div id="team-error" class="text-danger mt-2" style="display:none;">
+                            Please select 2–4 additional team members for Medium/High Impact.
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div>
+                                <h2 class="section-title">Upload Proof</h2>
+                                <p class="section-subtitle">Upload clear evidence of your action. Use either images or one PDF.</p>
+                            </div>
+                        </div>
+
+                        <div class="file-upload-container">
+                            <div id="fileDropzone" class="file-upload-dropzone">
+                                <div class="file-upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="file-upload-text">
+                                    <strong>Drop your files here</strong> or click to browse
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Supported formats: PDF, PNG, JPG, JPEG, GIF</small>
+                                </div>
+                                <button type="button" class="file-upload-btn" id="fileUploadBtn">
+                                    <i class="fas fa-folder-open me-1"></i> Choose Files
+                                </button>
+                            </div>
+
+                            <input
+                                type="file"
+                                class="d-none"
+                                id="proof_image"
+                                name="proof_image[]"
+                                accept="image/png,image/jpeg,image/jpg,image/gif,application/pdf"
+                                multiple
+                                required
+                            />
+
+                            <ul id="file_list" class="file-list"></ul>
+                        </div>
+
+                        <div class="file-upload-note">
+                            <strong><i class="fas fa-info-circle me-2"></i>Upload Rules</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Submit 2–5 images for PNG, JPG, JPEG, or GIF.</li>
+                                <li>Submit exactly 1 file if the proof is PDF.</li>
+                                <li>Do not mix PDF with images.</li>
+                                <li>Maximum file size is 15 MB per file.</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <div class="section-header">
+                            <div class="section-icon"><i class="fas fa-align-left"></i></div>
+                            <div>
+                                <h2 class="section-title">Additional Details</h2>
+                                <p class="section-subtitle">Provide enough information for admins to verify your submission.</p>
+                            </div>
+                        </div>
+
+                        <label for="description" class="form-label required-field">Description</label>
+                        <div class="info-callout mb-2">
+                            Please include important details such as date, time, venue, activity summary, and your role.
+                        </div>
+                        <textarea class="form-control" id="description" name="description" rows="8" required placeholder="Example: On 20 April 2026, our team organized..."></textarea>
+                        <div class="helper-text">Complete details help admins review your submission faster.</div>
+                    </section>
+
+                    <button type="submit" class="btn btn-primary w-100 submit-btn" id="submitBtn">
+                        <i class="fas fa-paper-plane me-2"></i> Submit Action
+                    </button>
+                </form>
+            </main>
+
+            <aside class="side-panel">
+                <div class="guide-card">
+                    <div class="guide-title">
+                        <i class="fas fa-star"></i>
+                        Points Guide
                     </div>
-                    <input 
-                        type="file" 
-                        class="d-none" 
-                        id="proof_image" 
-                        name="proof_image[]" 
-                        accept="image/png,image/jpeg,image/jpg,image/gif,application/pdf" 
-                        multiple 
-                        required
-                    />
-                    
-                    <ul id="file_list" class="file-list"></ul>
+                    <div class="points-grid">
+                        <div class="point-pill">
+                            <span>Low Impact</span>
+                            <strong>25 pts</strong>
+                        </div>
+                        <div class="point-pill">
+                            <span>Medium Impact</span>
+                            <strong>50 pts</strong>
+                        </div>
+                        <div class="point-pill">
+                            <span>High Impact</span>
+                            <strong>75 pts</strong>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="file-upload-note">
-                    <strong><i class="fas fa-info-circle me-2"></i>Note:</strong> 
-                    <ul class="mb-0 mt-2">
-                        <li>You can submit 2-5 images for PNG, JPG, JPEG, GIF formats</li>
-                        <li>You can only submit 1 file for PDF format</li>
-                        <li>Maximum file size is 15 MB per file</li>
-                        <li>Files are securely transferred with TLS encryption</li>
+                <div class="guide-card">
+                    <div class="guide-title">
+                        <i class="fas fa-users"></i>
+                        Team Rules
+                    </div>
+                    <ul class="mini-list">
+                        <li>You are automatically included.</li>
+                        <li>Medium/High Impact requires 3–5 members total.</li>
+                        <li>Select 2–4 additional members.</li>
+                        <li>Confirm your team before submitting.</li>
                     </ul>
                 </div>
-            </div>
 
-            <div class="mb-3">
-    <label for="description" class="form-label required-field">Additional Details</label>
-    
-    <div class="alert alert-light border p-2 mb-2" style="font-size: 0.9rem;">
-        Please provide the following details:<br>
-        (Date, Time, Venue, etc...)
-    </div>
+                <div class="guide-card">
+                    <div class="guide-title">
+                        <i class="fas fa-file-upload"></i>
+                        Proof Rules
+                    </div>
+                    <ul class="mini-list">
+                        <li>Images: 2–5 files.</li>
+                        <li>PDF: exactly 1 file.</li>
+                        <li>Do not mix PDF and images.</li>
+                        <li>Max 15 MB per file.</li>
+                    </ul>
+                </div>
 
-    <textarea class="form-control" id="description" name="description" rows="8" required></textarea>
-    <small class="text-muted">All fields above are required. Please fill in complete details.</small>
-</div>
-
-            <button type="submit" class="btn btn-primary w-100" id="submitBtn">Submit Item</button>
-        </form>
+                <div class="guide-card">
+                    <div class="guide-title">
+                        <i class="fas fa-check-circle"></i>
+                        Before Submit
+                    </div>
+                    <ul class="mini-list">
+                        <li>Choose category and action.</li>
+                        <li>Select one 3ZERO cluster.</li>
+                        <li>Add Club ID if required.</li>
+                        <li>Upload valid proof.</li>
+                        <li>Write clear details.</li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
     </div>
 
     <?php include 'includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // DOM elements
+// DOM elements
         const categorySelect = document.getElementById('category');
         const actionSelect = document.getElementById('action');
         const teamMembersDiv = document.getElementById('team_members_div');
@@ -1739,12 +1727,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         const fileDropzone = document.getElementById('fileDropzone');
         const fileUploadBtn = document.getElementById('fileUploadBtn');
 
-        // Handle click on the dropzone or button
-        fileDropzone.addEventListener('click', (e) => {
-            // Prevent triggering when clicking on child elements
-            if (e.target === fileDropzone || e.target === fileUploadBtn) {
-                fileInput.click();
-            }
+        // Handle click on the dropzone
+        fileDropzone.addEventListener('click', () => {
+            fileInput.click();
         });
 
         // Handle drag and drop
