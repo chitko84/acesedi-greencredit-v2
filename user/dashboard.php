@@ -312,78 +312,140 @@ $submission_result->data_seek(0);
     border: none !important;
     }
 
-    .dashboard-chatbot {
+    .chatbot-widget {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        z-index: 1080;
+        font-family: inherit;
+    }
+
+    .chatbot-toggle {
+        width: 64px;
+        height: 64px;
+        border: 0;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2e7d32, #113f19);
+        color: #ffffff;
+        box-shadow: 0 14px 32px rgba(17, 63, 25, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.55rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .chatbot-toggle:hover,
+    .chatbot-toggle:focus {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 38px rgba(17, 63, 25, 0.42);
+        outline: none;
+    }
+
+    .chatbot-panel {
+        position: absolute;
+        right: 0;
+        bottom: 78px;
+        width: min(380px, calc(100vw - 28px));
+        max-height: min(620px, calc(100vh - 112px));
         background: #ffffff;
-        border: 1px solid rgba(46, 125, 50, 0.14);
-        border-radius: 15px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.14);
-        padding: 28px;
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
+        border: 1px solid rgba(46, 125, 50, 0.18);
+        border-radius: 16px;
+        box-shadow: 0 22px 55px rgba(15, 42, 20, 0.28);
+        overflow: hidden;
+        display: none;
+    }
+
+    .chatbot-panel.is-open {
+        display: flex;
+        flex-direction: column;
     }
 
     .chatbot-header {
+        background: linear-gradient(135deg, #2e7d32, #143f1b);
+        color: #ffffff;
+        padding: 14px 16px;
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        align-items: flex-start;
-        margin-bottom: 18px;
+        gap: 12px;
+    }
+
+    .chatbot-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .chatbot-title-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
     }
 
     .chatbot-title {
         margin: 0;
-        color: #2e7d32;
-        font-weight: 700;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.2;
     }
 
     .chatbot-subtitle {
-        margin: 6px 0 0;
-        color: #667085;
-        font-size: 0.95rem;
+        margin: 2px 0 0;
+        font-size: 0.78rem;
+        opacity: 0.86;
+        line-height: 1.2;
     }
 
-    .chatbot-badge {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border-radius: 999px;
-        padding: 6px 12px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        white-space: nowrap;
+    .chatbot-close {
+        border: 0;
+        background: rgba(255, 255, 255, 0.14);
+        color: #ffffff;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
     }
 
-    .chatbot-window {
-        background: #f8faf9;
-        border: 1px solid #e4ebe5;
-        border-radius: 12px;
-        padding: 16px;
+    .chatbot-close:hover,
+    .chatbot-close:focus {
+        background: rgba(255, 255, 255, 0.24);
+        outline: none;
     }
 
     .chatbot-messages {
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        min-height: 210px;
-        max-height: 320px;
+        gap: 10px;
+        height: 300px;
         overflow-y: auto;
-        padding-right: 4px;
-        margin-bottom: 14px;
+        padding: 14px;
+        background: #f6faf7;
     }
 
     .chat-message {
-        max-width: 82%;
+        max-width: 86%;
         border-radius: 14px;
-        padding: 10px 13px;
-        line-height: 1.45;
-        font-size: 0.95rem;
+        padding: 9px 12px;
+        line-height: 1.42;
+        font-size: 0.9rem;
+        word-wrap: break-word;
     }
 
     .chat-message.bot {
         align-self: flex-start;
         background: #ffffff;
-        border: 1px solid #dbe7dd;
-        color: #25352b;
+        border: 1px solid #dce9df;
+        color: #223128;
     }
 
     .chat-message.user {
@@ -394,9 +456,11 @@ $submission_result->data_seek(0);
 
     .chatbot-suggestions {
         display: flex;
-        flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 14px;
+        overflow-x: auto;
+        padding: 12px 14px 10px;
+        border-top: 1px solid #e4ebe5;
+        background: #ffffff;
     }
 
     .chatbot-suggestion {
@@ -404,9 +468,10 @@ $submission_result->data_seek(0);
         background: #ffffff;
         color: #2e7d32;
         border-radius: 999px;
-        padding: 7px 12px;
-        font-size: 0.88rem;
-        font-weight: 600;
+        padding: 7px 11px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        white-space: nowrap;
         transition: all 0.2s ease;
     }
 
@@ -414,52 +479,66 @@ $submission_result->data_seek(0);
     .chatbot-suggestion:focus {
         background: #e8f5e9;
         border-color: #2e7d32;
+        outline: none;
     }
 
     .chatbot-form {
         display: flex;
-        gap: 10px;
+        gap: 8px;
+        padding: 12px 14px 14px;
+        background: #ffffff;
     }
 
     .chatbot-form input {
-        border-radius: 10px;
+        border-radius: 999px;
         border: 1px solid #ccd8cf;
-        min-height: 44px;
+        min-height: 42px;
+        font-size: 0.9rem;
+        padding-left: 14px;
     }
 
     .chatbot-form button {
-        border-radius: 10px;
-        min-width: 96px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
         background: #2e7d32;
         border-color: #2e7d32;
-        font-weight: 700;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
     }
 
-    .chatbot-form button:hover {
+    .chatbot-form button:hover,
+    .chatbot-form button:focus {
         background: #256b2a;
         border-color: #256b2a;
+        outline: none;
     }
 
     @media (max-width: 576px) {
-        .dashboard-chatbot {
-            padding: 20px 14px;
+        .chatbot-widget {
+            right: 14px;
+            bottom: 14px;
         }
 
-        .chatbot-header,
-        .chatbot-form {
-            flex-direction: column;
+        .chatbot-toggle {
+            width: 58px;
+            height: 58px;
+            font-size: 1.35rem;
         }
 
-        .chatbot-badge {
-            align-self: flex-start;
+        .chatbot-panel {
+            right: 0;
+            bottom: 70px;
+            width: calc(100vw - 28px);
+            max-height: calc(100vh - 96px);
+            border-radius: 14px;
         }
 
-        .chat-message {
-            max-width: 94%;
-        }
-
-        .chatbot-form button {
-            width: 100%;
+        .chatbot-messages {
+            height: min(300px, calc(100vh - 290px));
         }
     }
 
@@ -678,38 +757,49 @@ $submission_result->data_seek(0);
     </div>
 </div>
 
-<div class="container my-5 dashboard-chatbot">
-    <div class="chatbot-header">
-        <div>
-            <h4 class="chatbot-title"><i class="fas fa-seedling me-2"></i>GreenCredit Help Assistant</h4>
-            <p class="chatbot-subtitle">Ask quick questions about submissions, points, proof rules, rewards, and dashboard features.</p>
+<div class="chatbot-widget" aria-label="GreenCredit Help Assistant">
+    <div class="chatbot-panel" id="chatbotPanel" aria-hidden="true">
+        <div class="chatbot-header">
+            <div class="chatbot-title-wrap">
+                <span class="chatbot-title-icon"><i class="fas fa-leaf"></i></span>
+                <div>
+                    <h4 class="chatbot-title">GreenCredit Help</h4>
+                    <p class="chatbot-subtitle">Local help assistant</p>
+                </div>
+            </div>
+            <button type="button" class="chatbot-close" id="chatbotClose" aria-label="Minimize chat">
+                <i class="fas fa-minus"></i>
+            </button>
         </div>
-        <span class="chatbot-badge">Local Help Bot</span>
-    </div>
 
-    <div class="chatbot-window" aria-label="GreenCredit chatbot">
         <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
             <div class="chat-message bot">
-                Hi! I can help with eco points, impact categories, proof uploads, 3ZERO clusters, status, rewards, profile updates, the sustainability calculator, contact admin, and guidelines.
+                Hi! Ask me about submissions, points, 3ZERO clusters, proof files, status, rewards, profile, calculator, contact, news, or guidelines.
             </div>
         </div>
 
         <div class="chatbot-suggestions" aria-label="Suggested questions">
-            <button type="button" class="chatbot-suggestion" data-question="How to submit an eco-friendly action?">Submit action</button>
-            <button type="button" class="chatbot-suggestion" data-question="Explain impact categories">Impact categories</button>
+            <button type="button" class="chatbot-suggestion" data-question="How do I submit an eco-friendly action?">Submit action</button>
+            <button type="button" class="chatbot-suggestion" data-question="How many impact categories are available?">Categories</button>
             <button type="button" class="chatbot-suggestion" data-question="When is Club ID required?">Club ID</button>
-            <button type="button" class="chatbot-suggestion" data-question="What proof files are allowed?">Proof rules</button>
-            <button type="button" class="chatbot-suggestion" data-question="How to check submission status?">Status</button>
-            <button type="button" class="chatbot-suggestion" data-question="How to view the guidelines?">Guidelines</button>
+            <button type="button" class="chatbot-suggestion" data-question="What proof files are allowed?">Proof files</button>
+            <button type="button" class="chatbot-suggestion" data-question="Where can I check submission status?">Status</button>
+            <button type="button" class="chatbot-suggestion" data-question="Where can I view rewards?">Rewards</button>
+            <button type="button" class="chatbot-suggestion" data-question="Where can I view points guidelines?">Guidelines</button>
+            <button type="button" class="chatbot-suggestion" data-question="How do I contact admin?">Contact admin</button>
         </div>
 
         <form class="chatbot-form" id="chatbotForm" autocomplete="off">
-            <input type="text" class="form-control" id="chatbotInput" placeholder="Type a help question..." aria-label="Type a help question">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-paper-plane me-1"></i> Send
+            <input type="text" class="form-control" id="chatbotInput" placeholder="Ask a quick question..." aria-label="Type a help question">
+            <button type="submit" class="btn btn-primary" aria-label="Send message">
+                <i class="fas fa-paper-plane"></i>
             </button>
         </form>
     </div>
+
+    <button type="button" class="chatbot-toggle" id="chatbotToggle" aria-label="Open GreenCredit help chat" aria-expanded="false">
+        <i class="fas fa-comments"></i>
+    </button>
 </div>
 
 <div class="container my-5" style="box-shadow: 0 0 20px rgba(0,0,0,0.2); border-radius: 15px; padding: 40px 20px; background: #fff; width: 100%; max-width: 1200px; margin: 0 auto;">
@@ -861,85 +951,169 @@ $submission_result->data_seek(0);
         });
     });
 
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const chatbotPanel = document.getElementById('chatbotPanel');
+    const chatbotClose = document.getElementById('chatbotClose');
     const chatbotForm = document.getElementById('chatbotForm');
     const chatbotInput = document.getElementById('chatbotInput');
     const chatbotMessages = document.getElementById('chatbotMessages');
     const chatbotSuggestions = document.querySelectorAll('.chatbot-suggestion');
 
     const chatbotAnswers = [
-        {
-            keywords: ['submit', 'eco-friendly', 'eco friendly', 'action', 'submission'],
-            answer: 'Go to Submit Item from Your Actions. Choose an impact category, select one 3ZERO cluster, add details, upload valid proof, then submit.'
-        },
-        {
-            keywords: ['how many', 'impact categories', 'category', 'categories'],
-            answer: 'There are 3 impact categories: Low Impact, Medium Impact, and High Impact.'
-        },
-        {
-            keywords: ['low impact', '25'],
-            answer: 'Low Impact actions are worth 25 points. They are usually individual or smaller eco-friendly activities.'
-        },
-        {
-            keywords: ['medium impact', '50'],
-            answer: 'Medium Impact actions are worth 50 points. Club ID is required, and the team must have 3 to 5 members including you.'
-        },
-        {
-            keywords: ['high impact', '75'],
-            answer: 'High Impact actions are worth 75 points. Club ID is required, and the team must have 3 to 5 members including you.'
-        },
-        {
-            keywords: ['club id', 'clubid'],
-            answer: 'Club ID is required for Medium Impact and High Impact submissions. It is not required for Low Impact.'
-        },
-        {
-            keywords: ['team', 'member', 'members'],
-            answer: 'Team members are required for Medium and High Impact actions. Select 2 to 4 additional members, so the total team size is 3 to 5 including you.'
-        },
-        {
-            keywords: ['proof', 'upload', 'file', 'files', 'image', 'pdf'],
-            answer: 'Allowed proof: 2 to 5 images in PNG, JPG, JPEG, or GIF format, or exactly 1 PDF. Do not mix PDF with images. Max size is 15 MB per file.'
-        },
-        {
-            keywords: ['status', 'pending', 'approved', 'rejected', 'check'],
-            answer: 'Check your submission status in View Submission History. Status can be pending, approved, or rejected.'
-        },
-        {
-            keywords: ['delete', 'remove'],
-            answer: 'You can delete a submission only while it is pending. Go to View Submission History and use the Delete button for that pending submission.'
-        },
-        {
-            keywords: ['leaderboard', 'rank', 'ranking'],
-            answer: 'Open View Leaderboard to see top users ranked by approved submission points and team participation.'
-        },
-        {
-            keywords: ['reward', 'rewards'],
-            answer: 'Open Your Rewards to view rewards assigned by admins for your submissions.'
-        },
-        {
-            keywords: ['profile', 'update profile', 'picture', 'password'],
-            answer: 'Use the Profile menu to update your personal details, profile picture, or password.'
-        },
-        {
-            keywords: ['sustainability', 'calculator', 'score'],
-            answer: 'Open Sustainability Calculator from the tools menu. Enter your water usage, reusable items, and walking days to calculate and track your score.'
-        },
-        {
-            keywords: ['contact', 'admin', 'message', 'response'],
-            answer: 'Use Contact to send a message to admin. You can view replies in Admin Responses from the tools menu.'
-        },
-        {
-            keywords: ['3zero', '3 zero', 'cluster', 'zero poverty', 'zero unemployment', 'zero net carbon'],
-            answer: 'Choose one 3ZERO cluster for each submission: Zero Poverty, Zero Unemployment, or Zero Net Carbon Emission.'
-        },
-        {
-            keywords: ['guideline', 'guidelines', 'view guidelines'],
-            answer: 'To view the guidelines, open the Guidelines page from the main website navigation, or go to ../guidelines.php from this user area.'
-        },
-        {
-            keywords: ['eco point', 'eco points', 'points'],
-            answer: 'Eco points come from submitted actions. Low Impact gives 25 points, Medium Impact gives 50 points, and High Impact gives 75 points after admin review.'
-        }
+        { question: 'How do I submit an eco-friendly action?', keywords: ['how submit', 'submit action', 'submit activity', 'eco friendly action', 'where submit action'], answer: 'Open Submit Item, choose a category, add details, upload proof, and submit.' },
+        { question: 'Where is the submission page?', keywords: ['submission page', 'submit page', 'where submit', 'submit item'], answer: 'Use Submit Item in Your Actions on this dashboard.' },
+        { question: 'What information is required for submission?', keywords: ['required submission', 'submission information', 'what need submit', 'details required'], answer: 'You need category, action, 3ZERO cluster, description, proof files, and team/Club ID if required.' },
+        { question: 'Can I edit a submission?', keywords: ['edit submission', 'change submission', 'modify submission'], answer: 'Editing is limited. Use Submission History to manage pending submissions where available.' },
+        { question: 'Can I delete a submission?', keywords: ['delete submission', 'remove submission', 'cancel submission'], answer: 'Yes, only pending submissions can be deleted from Submission History.' },
+        { question: 'Can I delete approved submissions?', keywords: ['delete approved', 'remove approved'], answer: 'No. Approved submissions cannot be deleted by users.' },
+        { question: 'Can I delete rejected submissions?', keywords: ['delete rejected', 'remove rejected'], answer: 'No. Rejected submissions cannot be deleted by users.' },
+        { question: 'Can I submit multiple activities?', keywords: ['multiple activities', 'many submissions', 'submit again'], answer: 'Yes. You can submit multiple activities if each has valid details and proof.' },
+        { question: 'What happens after I submit?', keywords: ['after submit', 'after submission', 'what next'], answer: 'Your submission becomes pending until an admin reviews it.' },
+        { question: 'How long does verification take?', keywords: ['verification time', 'how long verify', 'review time'], answer: 'Verification time depends on admin review. Check Submission History for updates.' },
+        { question: 'How many impact categories are available?', keywords: ['how many categories', 'impact categories', 'categories available'], answer: 'There are 3 impact categories: Low Impact, Medium Impact, and High Impact.' },
+        { question: 'What is Low Impact?', keywords: ['low impact', 'explain low', 'low category'], answer: 'Low Impact actions are simple eco-friendly activities. They give 25 points.' },
+        { question: 'What is Medium Impact?', keywords: ['medium impact', 'explain medium', 'medium category'], answer: 'Medium Impact actions have higher contribution. They give 50 points and require Club ID and team members.' },
+        { question: 'What is High Impact?', keywords: ['high impact', 'explain high', 'high category'], answer: 'High Impact actions are major activities. They give 75 points and require Club ID and team members.' },
+        { question: 'How many points does Low Impact give?', keywords: ['low points', 'low impact points', '25 points'], answer: 'Low Impact gives 25 points.' },
+        { question: 'How many points does Medium Impact give?', keywords: ['medium points', 'medium impact points', '50 points'], answer: 'Medium Impact gives 50 points.' },
+        { question: 'How many points does High Impact give?', keywords: ['high points', 'high impact points', '75 points'], answer: 'High Impact gives 75 points.' },
+        { question: 'Which category should I choose?', keywords: ['choose category', 'which impact', 'best category'], answer: 'Choose the category that matches your activity size, contribution, and requirements.' },
+        { question: 'What are examples of Low Impact activities?', keywords: ['low examples', 'low activity examples'], answer: 'Low Impact can include simple individual eco-friendly actions with valid proof.' },
+        { question: 'What are examples of Medium Impact activities?', keywords: ['medium examples', 'medium activity examples'], answer: 'Medium Impact can include club or team activities with stronger contribution and valid proof.' },
+        { question: 'What are examples of High Impact activities?', keywords: ['high examples', 'high activity examples'], answer: 'High Impact can include major club projects, campaigns, or large sustainability contributions.' },
+        { question: 'What are the 3ZERO clusters?', keywords: ['3zero clusters', '3 zero clusters', 'cluster list'], answer: 'The 3ZERO clusters are Zero Poverty, Zero Unemployment, and Zero Net Carbon Emission.' },
+        { question: 'What is Zero Poverty?', keywords: ['zero poverty', 'poverty cluster'], answer: 'Zero Poverty focuses on actions that help reduce poverty and support community wellbeing.' },
+        { question: 'What is Zero Unemployment?', keywords: ['zero unemployment', 'unemployment cluster'], answer: 'Zero Unemployment focuses on skills, work opportunities, entrepreneurship, and employability.' },
+        { question: 'What is Zero Net Carbon Emission?', keywords: ['zero net carbon', 'carbon emission', 'net carbon'], answer: 'Zero Net Carbon Emission focuses on reducing carbon impact and protecting the environment.' },
+        { question: 'Which cluster should I select?', keywords: ['choose cluster', 'which cluster', 'select cluster'], answer: 'Select the one 3ZERO cluster that best matches your activity goal.' },
+        { question: 'Can I select more than one cluster?', keywords: ['more than one cluster', 'multiple clusters', 'two clusters'], answer: 'No. Select only one 3ZERO cluster for each submission.' },
+        { question: 'Why are clusters important?', keywords: ['why clusters', 'cluster important', 'purpose cluster'], answer: 'Clusters help classify your action under the correct 3ZERO goal.' },
+        { question: 'When is Club ID required?', keywords: ['club id required', 'when club id', 'clubid required'], answer: 'Club ID is required for Medium Impact and High Impact submissions.' },
+        { question: 'Is Club ID required for Low Impact?', keywords: ['club id low', 'low club id'], answer: 'No. Club ID is not required for Low Impact.' },
+        { question: 'Is Club ID required for Medium Impact?', keywords: ['club id medium', 'medium club id'], answer: 'Yes. Club ID is required for Medium Impact.' },
+        { question: 'Is Club ID required for High Impact?', keywords: ['club id high', 'high club id'], answer: 'Yes. Club ID is required for High Impact.' },
+        { question: 'When are team members required?', keywords: ['team required', 'members required', 'when team'], answer: 'Team members are required for Medium Impact and High Impact submissions.' },
+        { question: 'How many team members can I add?', keywords: ['how many team', 'team size', 'add members'], answer: 'For Medium/High Impact, total team size must be 3 to 5 including you.' },
+        { question: 'Can I submit without team members?', keywords: ['without team', 'no team members', 'submit alone'], answer: 'Yes for Low Impact. Medium and High Impact require team members.' },
+        { question: 'What proof files are allowed?', keywords: ['proof files', 'allowed files', 'upload proof'], answer: 'Allowed proof: PNG, JPG, JPEG, GIF images, or PDF.' },
+        { question: 'How many images can I upload?', keywords: ['how many images', 'image count', 'upload images'], answer: 'Upload 2 to 5 images if you use image proof.' },
+        { question: 'Can I upload PDF files?', keywords: ['upload pdf', 'pdf proof', 'pdf file'], answer: 'Yes. If using PDF proof, upload exactly 1 PDF file.' },
+        { question: 'What is the maximum file size?', keywords: ['max file size', 'maximum size', '15 mb'], answer: 'Each proof file must be 15 MB or less.' },
+        { question: 'Can I upload both images and PDF?', keywords: ['mix pdf images', 'images and pdf', 'both pdf image'], answer: 'No. Upload either images or one PDF, not both together.' },
+        { question: 'Why was my file rejected?', keywords: ['file rejected', 'upload rejected', 'proof rejected'], answer: 'Files may be rejected for wrong type, too many/few files, mixed PDF/images, or size over 15 MB.' },
+        { question: 'What makes valid proof?', keywords: ['valid proof', 'good proof', 'proof valid'], answer: 'Valid proof is clear, relevant, and shows the activity happened.' },
+        { question: 'What does Pending mean?', keywords: ['pending mean', 'status pending'], answer: 'Pending means your submission is waiting for admin review.' },
+        { question: 'What does Approved mean?', keywords: ['approved mean', 'status approved'], answer: 'Approved means admin accepted your submission and it counts for points.' },
+        { question: 'What does Rejected mean?', keywords: ['rejected mean', 'status rejected'], answer: 'Rejected means admin did not accept the submission. Check remarks for the reason.' },
+        { question: 'Where can I check submission status?', keywords: ['check status', 'submission status', 'where status'], answer: 'Open View Submission History to check each submission status.' },
+        { question: 'How do I know if my submission is approved?', keywords: ['know approved', 'approved submission', 'is approved'], answer: 'In Submission History, approved submissions show the Approved status and verification date.' },
+        { question: 'What is a verification date?', keywords: ['verification date', 'verified date'], answer: 'The verification date is when admin reviewed and updated your submission status.' },
+        { question: 'Can I resubmit after rejection?', keywords: ['resubmit rejected', 'submit after rejection'], answer: 'Yes. Create a new submission with improved details and valid proof.' },
+        { question: 'How are points calculated?', keywords: ['calculate points', 'points calculated', 'eco points'], answer: 'Points are based on impact category: Low 25, Medium 50, High 75.' },
+        { question: 'Where can I view my points?', keywords: ['view points', 'my points', 'points earned'], answer: 'Your points appear in the profile summary on this dashboard.' },
+        { question: 'How do I view rewards?', keywords: ['view rewards', 'my rewards', 'where rewards'], answer: 'Open Your Rewards to see rewards assigned to your submissions.' },
+        { question: 'How are rewards assigned?', keywords: ['rewards assigned', 'assign rewards', 'reward assigned'], answer: 'Admins assign rewards after reviewing eligible submissions.' },
+        { question: 'Where can I see my ranking?', keywords: ['see ranking', 'my ranking', 'my rank'], answer: 'Your rank appears on the dashboard. You can also open View Leaderboard.' },
+        { question: 'How does the leaderboard work?', keywords: ['leaderboard work', 'ranking work', 'leaderboard'], answer: 'The leaderboard ranks users by approved submission points and team participation.' },
+        { question: 'How do I update my profile?', keywords: ['update profile', 'edit profile'], answer: 'Open Profile from the profile menu and update your details.' },
+        { question: 'How do I change my profile picture?', keywords: ['change picture', 'profile picture', 'upload profile'], answer: 'Open Profile, choose a new profile picture, crop it, and save.' },
+        { question: 'How do I crop my profile picture?', keywords: ['crop profile', 'crop picture'], answer: 'After selecting a profile picture, use the crop popup before saving.' },
+        { question: 'How do I change my password?', keywords: ['change password', 'new password'], answer: 'Open Profile and use the password change section.' },
+        { question: 'How do I reset my password?', keywords: ['reset password', 'forgot password'], answer: 'Use Forgot Password on the login page to request a reset link.' },
+        { question: 'What is the sustainability calculator?', keywords: ['sustainability calculator', 'calculator'], answer: 'It estimates your sustainability score from water usage, reusable items, and walking days.' },
+        { question: 'How does the sustainability score work?', keywords: ['sustainability score', 'score work'], answer: 'The score combines water, reusable item, and walking inputs into a score out of 100.' },
+        { question: 'How can I track my sustainability score?', keywords: ['track score', 'score history'], answer: 'Use the Sustainability Calculator. Your previous scores appear in the score chart.' },
+        { question: 'What do the sustainability charts show?', keywords: ['sustainability charts', 'calculator chart'], answer: 'They show your sustainability score trend over time.' },
+        { question: 'How do I contact admin?', keywords: ['contact admin', 'ask admin', 'admin help'], answer: 'Use Contact to send a message to the admin team.' },
+        { question: 'Where can I view admin replies?', keywords: ['admin replies', 'admin responses', 'view replies'], answer: 'Open Admin Responses from the tools menu to view admin replies.' },
+        { question: 'How do I send a message to admin?', keywords: ['send message admin', 'message admin'], answer: 'Open Contact, write your message, and submit the form.' },
+        { question: 'How will I know if admin replied?', keywords: ['admin replied', 'know reply'], answer: 'Check Admin Responses. You may also receive an email response.' },
+        { question: 'What does the dashboard show?', keywords: ['dashboard show', 'dashboard info'], answer: 'The dashboard shows your profile, points, rank, recent submissions, charts, and CSV download.' },
+        { question: 'What is my rank?', keywords: ['what rank', 'rank meaning'], answer: 'Your rank shows your position compared with other users based on points.' },
+        { question: 'How do I download my submissions as CSV?', keywords: ['download csv', 'submissions csv', 'export csv'], answer: 'Click Download Submissions as CSV in the Submission Insights section.' },
+        { question: 'What are recent submissions?', keywords: ['recent submissions', 'latest submissions'], answer: 'Recent submissions are your latest 5 submitted activities shown on the dashboard.' },
+        { question: 'What does the submission trend chart show?', keywords: ['submission trend', 'trend chart'], answer: 'It shows how many submissions you made over time.' },
+        { question: 'Where can I view news and events?', keywords: ['news events', 'view news', 'events'], answer: 'Open the News and Events page from the main site navigation.' },
+        { question: 'Where can I view points guidelines?', keywords: ['points guidelines', 'view guidelines', 'guidelines'], answer: 'Open the Guidelines page from the main site navigation, or go to ../guidelines.php.' },
+        { question: 'How do I understand the submission rules?', keywords: ['submission rules', 'understand rules'], answer: 'Read the Guidelines page and check the proof, Club ID, team, and category rules.' },
+        { question: 'What activities earn the most points?', keywords: ['most points', 'highest points', 'earn most'], answer: 'High Impact activities earn the most points: 75 points.' },
+        { question: 'How do I use GreenCredit?', keywords: ['use greencredit', 'how use system'], answer: 'Submit eco-friendly actions, upload proof, wait for review, earn points, and track progress.' },
+        { question: 'What is GreenCredit?', keywords: ['what greencredit', 'green credit'], answer: 'GreenCredit is a platform for tracking eco-friendly actions, points, rewards, and sustainability progress.' },
+        { question: 'What is the purpose of this platform?', keywords: ['purpose platform', 'why greencredit'], answer: 'Its purpose is to encourage sustainable actions and recognize users through points and rewards.' }
     ];
+
+    const chatbotStopWords = new Set(['how', 'can', 'what', 'where', 'when', 'does', 'are', 'the', 'and', 'for', 'with', 'why', 'is', 'my', 'your', 'you', 'do', 'did', 'this', 'that', 'from']);
+
+    function normalizeChatText(text) {
+        return text
+            .toLowerCase()
+            .replace(/3\s*zero/g, '3zero')
+            .replace(/club\s*id/g, 'clubid')
+            .replace(/eco\s*friendly/g, 'ecofriendly')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function getChatTokens(text) {
+        return normalizeChatText(text)
+            .split(' ')
+            .filter(token => token.length > 1 && !chatbotStopWords.has(token));
+    }
+
+    function getEditDistance(a, b) {
+        if (a === b) return 0;
+        if (!a.length) return b.length;
+        if (!b.length) return a.length;
+
+        const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
+        for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                const cost = b.charAt(i - 1) === a.charAt(j - 1) ? 0 : 1;
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j - 1] + cost
+                );
+            }
+        }
+
+        return matrix[b.length][a.length];
+    }
+
+    function isFuzzyTokenMatch(inputToken, answerToken) {
+        if (inputToken === answerToken) return true;
+        if (inputToken.length < 4 || answerToken.length < 4) return false;
+        const limit = Math.max(inputToken.length, answerToken.length) > 7 ? 2 : 1;
+        return getEditDistance(inputToken, answerToken) <= limit;
+    }
+
+    function scoreChatbotAnswer(entry, normalizedQuestion, questionTokens) {
+        const entryPhrases = [entry.question, ...entry.keywords].map(normalizeChatText);
+        const entryText = normalizeChatText(entryPhrases.join(' '));
+        const entryTokens = getChatTokens(entryText);
+        let score = 0;
+
+        entryPhrases.forEach(phrase => {
+            if (phrase && normalizedQuestion.includes(phrase)) score += 12;
+            if (phrase.length > 4 && phrase.includes(normalizedQuestion)) score += 8;
+        });
+
+        questionTokens.forEach(token => {
+            if (entryTokens.includes(token)) {
+                score += 3;
+                return;
+            }
+
+            if (entryTokens.some(entryToken => isFuzzyTokenMatch(token, entryToken))) {
+                score += 1.5;
+            }
+        });
+
+        return score;
+    }
 
     function addChatMessage(text, sender) {
         const message = document.createElement('div');
@@ -950,16 +1124,29 @@ $submission_result->data_seek(0);
     }
 
     function getChatbotAnswer(question) {
-        const normalizedQuestion = question.toLowerCase();
-        const match = chatbotAnswers.find(item =>
-            item.keywords.some(keyword => normalizedQuestion.includes(keyword))
-        );
+        const normalizedQuestion = normalizeChatText(question);
+        const questionTokens = getChatTokens(question);
 
-        if (match) {
-            return match.answer;
+        if (!normalizedQuestion) {
+            return 'Type a question about submissions, points, rewards, profile, calculator, contact, or guidelines.';
         }
 
-        return 'I can help with submissions, eco points, impact categories, proof rules, Club ID, team members, status, leaderboard, rewards, profile updates, calculator, contact admin, and guidelines.';
+        let bestMatch = null;
+        let bestScore = 0;
+
+        chatbotAnswers.forEach(entry => {
+            const score = scoreChatbotAnswer(entry, normalizedQuestion, questionTokens);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = entry;
+            }
+        });
+
+        if (bestMatch && bestScore >= 3) {
+            return bestMatch.answer;
+        }
+
+        return 'I can help with submissions, impact categories, 3ZERO clusters, Club ID, proof files, status, points, rewards, profile, calculator, contact, news, and guidelines.';
     }
 
     function askChatbot(question) {
@@ -972,7 +1159,30 @@ $submission_result->data_seek(0);
         chatbotInput.focus();
     }
 
-    if (chatbotForm && chatbotInput && chatbotMessages) {
+    function openChatbot() {
+        chatbotPanel.classList.add('is-open');
+        chatbotPanel.setAttribute('aria-hidden', 'false');
+        chatbotToggle.setAttribute('aria-expanded', 'true');
+        setTimeout(() => chatbotInput.focus(), 50);
+    }
+
+    function closeChatbot() {
+        chatbotPanel.classList.remove('is-open');
+        chatbotPanel.setAttribute('aria-hidden', 'true');
+        chatbotToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    if (chatbotToggle && chatbotPanel && chatbotClose && chatbotForm && chatbotInput && chatbotMessages) {
+        chatbotToggle.addEventListener('click', function() {
+            if (chatbotPanel.classList.contains('is-open')) {
+                closeChatbot();
+            } else {
+                openChatbot();
+            }
+        });
+
+        chatbotClose.addEventListener('click', closeChatbot);
+
         chatbotForm.addEventListener('submit', function(event) {
             event.preventDefault();
             askChatbot(chatbotInput.value);
