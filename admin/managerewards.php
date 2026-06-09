@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tr>
                     <td><?php echo $submission['id']; ?></td>
                     <td><?php echo htmlspecialchars($submission['action']); ?></td>
-                    <td><?php echo $submission['points']; ?></td>
+                    <td><?php echo strtolower(trim($submission['status'] ?? '')) === 'approved' ? (int)$submission['points'] : 0; ?></td>
                     <td><?php echo $submission['created_at']; ?></td>
                     <td>
                         <!-- Display the submitted image if it exists -->

@@ -30,7 +30,7 @@ $submission_sort_columns = [
     'submitter_name' => 'u.name',
     'category' => 's.category',
     'action' => 's.action',
-    'points' => 's.points',
+    'points' => "CASE WHEN LOWER(TRIM(s.status)) = 'approved' THEN s.points ELSE 0 END",
     'status' => "FIELD(s.status, 'pending', 'approved', 'rejected')",
     'created_at' => 's.created_at',
     'verified_date' => 's.verified_date',
@@ -71,8 +71,8 @@ $submission_sort_options = [
         ['id', 'ASC', 'Submission ID', 'Smallest first', 'fa-arrow-up-1-9'],
         ['category', 'ASC', 'Category', 'A to Z', 'fa-layer-group'],
         ['action', 'ASC', 'Action', 'A to Z', 'fa-leaf'],
-        ['points', 'DESC', 'Points', 'Highest first', 'fa-star'],
-        ['points', 'ASC', 'Points', 'Lowest first', 'fa-star-half-stroke'],
+        ['points', 'DESC', 'Approved Points', 'Highest first', 'fa-star'],
+        ['points', 'ASC', 'Approved Points', 'Lowest first', 'fa-star-half-stroke'],
     ]],
     ['group' => 'People & Teams', 'items' => [
         ['submitter_name', 'ASC', 'Submitted By', 'A to Z', 'fa-user'],
@@ -301,6 +301,7 @@ function sendSubmissionNotification($submission_id, $action, $remarks) {
     ];
     
     $action_label = $action_labels[$action] ?? ucfirst($action);
+    $display_points = strtolower(trim($submission['status'] ?? '')) === 'approved' ? (int)$submission['points'] : 0;
     
     // Email subject and content
     $subject = "Your Submission Has Been $action_label - GreenCredit";
@@ -335,7 +336,7 @@ function sendSubmissionNotification($submission_id, $action, $remarks) {
                         <li><strong>ID:</strong> #{$submission['id']}</li>
                         <li><strong>Category:</strong> {$submission['category']}</li>
                         <li><strong>Action:</strong> {$submission['action']}</li>
-                        <li><strong>Points:</strong> {$submission['points']}</li>
+                        <li><strong>Points:</strong> {$display_points}</li>
                         <li><strong>Status:</strong> <span class='status $action'>$action_label</span></li>
                     </ul>
     ";
@@ -407,7 +408,7 @@ function sendSubmissionNotification($submission_id, $action, $remarks) {
                         <li><strong>Submitter:</strong> {$submission['submitter_name']} ({$submission['submitter_email']})</li>
                         <li><strong>Category:</strong> {$submission['category']}</li>
                         <li><strong>Action:</strong> {$submission['action']}</li>
-                        <li><strong>Points:</strong> {$submission['points']}</li>
+                        <li><strong>Points:</strong> {$display_points}</li>
                         <li><strong>Status:</strong> $action_label</li>
                     </ul>
     ";
@@ -748,7 +749,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_superadmin && isset($_POST['ad
                     </td>
                     <td><?= htmlspecialchars($submission['category']); ?></td>
                     <td><?= htmlspecialchars($submission['action']); ?></td>
-                    <td><?= htmlspecialchars($submission['points']); ?></td>
+                    <td><?= htmlspecialchars(strtolower(trim($submission['status'] ?? '')) === 'approved' ? (int)$submission['points'] : 0); ?></td>
                     <td>
                         <span class="badge 
                             <?php 

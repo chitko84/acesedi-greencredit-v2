@@ -227,6 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($stmt->execute()) {
         $_SESSION['success'] = "Your submission has been successfully recorded! Please check your email for further updates. Sometimes it can be in the spam folder so always check your spam folder too so that you won't miss out any detail from us";
+        $display_points = 0;
 
         // Send email to user (submitter)
         $user_subject = 'Thank You for Your Submission!';
@@ -366,7 +367,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <li><strong>User Name:</strong> $name</li>
                             <li><strong>Category:</strong> $category</li>
                             <li><strong>Action:</strong> $action</li>
-                            <li><strong>Points:</strong> $points</li>
+                            <li><strong>Points:</strong> $display_points</li>
                             <li><strong>Team Members:</strong> " . implode(", ", $team_members) . "</li>
                             <li><strong>Description:</strong> $description</li>
                         </ul>
@@ -984,6 +985,232 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: #52635a;
             font-size: 0.9rem;
             line-height: 1.65;
+        }
+
+        body.dark-mode {
+            --gc-primary: #66e08f;
+            --gc-primary-dark: #43bd70;
+            --gc-primary-soft: rgba(102, 224, 143, 0.12);
+            --gc-bg: #07110d;
+            --gc-card: #111c17;
+            --gc-text: #e8fff0;
+            --gc-muted: #b8cfc1;
+            --gc-border: #244638;
+            --gc-danger: #ff8f8f;
+            --gc-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+            --gc-shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.28);
+            background:
+                radial-gradient(circle at top left, rgba(102, 224, 143, 0.10), transparent 32rem),
+                linear-gradient(180deg, #07110d 0%, #0b1210 100%);
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .form-panel,
+        body.dark-mode .side-panel,
+        body.dark-mode .form-section,
+        body.dark-mode .guide-card {
+            background: var(--gc-card);
+            border-color: var(--gc-border);
+            color: var(--gc-text);
+            box-shadow: var(--gc-shadow-soft);
+        }
+
+        body.dark-mode .form-section {
+            background: #121a17;
+        }
+
+        body.dark-mode .section-title,
+        body.dark-mode .form-label,
+        body.dark-mode .file-upload-text,
+        body.dark-mode .guide-title,
+        body.dark-mode .cluster-option label,
+        body.dark-mode .selected-member-info span,
+        body.dark-mode .confirmed-item div,
+        body.dark-mode .file-list-item-name,
+        body.dark-mode .fw-bold,
+        body.dark-mode .fw-semibold {
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .section-subtitle,
+        body.dark-mode .helper-text,
+        body.dark-mode .info-callout,
+        body.dark-mode .file-upload-note,
+        body.dark-mode .file-list-item-size,
+        body.dark-mode .mini-list,
+        body.dark-mode .text-muted,
+        body.dark-mode small {
+            color: var(--gc-muted) !important;
+        }
+
+        body.dark-mode .section-icon,
+        body.dark-mode .file-upload-icon,
+        body.dark-mode .team-member-counter {
+            background: var(--gc-primary-soft);
+            color: var(--gc-primary);
+            border: 1px solid rgba(102, 224, 143, 0.20);
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select,
+        body.dark-mode textarea.form-control {
+            background-color: #0b1511;
+            border-color: var(--gc-border);
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .form-control::placeholder,
+        body.dark-mode textarea.form-control::placeholder {
+            color: #86a894;
+            opacity: 1;
+        }
+
+        body.dark-mode .form-control:focus,
+        body.dark-mode .form-select:focus,
+        body.dark-mode textarea.form-control:focus {
+            background-color: #0d1813;
+            border-color: var(--gc-primary);
+            color: var(--gc-text);
+            box-shadow: 0 0 0 0.22rem rgba(102, 224, 143, 0.18);
+        }
+
+        body.dark-mode .form-select option {
+            background: #0b1511;
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .info-callout {
+            background: rgba(102, 224, 143, 0.08);
+            border-color: var(--gc-border);
+            border-left-color: var(--gc-primary);
+        }
+
+        body.dark-mode .cluster-option {
+            background: #0b1511;
+            border-color: var(--gc-border);
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .cluster-option:hover {
+            background: #13231b;
+            border-color: var(--gc-primary);
+        }
+
+        body.dark-mode .cluster-option.selected {
+            background: linear-gradient(135deg, #1f8f4f, #16703d);
+            border-color: var(--gc-primary);
+            color: #ffffff;
+            box-shadow: 0 14px 26px rgba(102, 224, 143, 0.18);
+        }
+
+        body.dark-mode .search-results {
+            background: #0b1511;
+            border-color: var(--gc-border);
+            box-shadow: var(--gc-shadow-soft);
+        }
+
+        body.dark-mode .search-result-item {
+            color: var(--gc-text);
+            border-bottom-color: var(--gc-border);
+        }
+
+        body.dark-mode .search-result-item:hover {
+            background-color: #13231b;
+        }
+
+        body.dark-mode .selected-members-container,
+        body.dark-mode .team-confirmed-list,
+        body.dark-mode .point-pill {
+            background-color: #0b1511;
+            border-color: var(--gc-border);
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .selected-member,
+        body.dark-mode .confirmed-item,
+        body.dark-mode .file-list-item {
+            background-color: #111c17;
+            border-color: var(--gc-border);
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .selected-member-remove:hover,
+        body.dark-mode .file-list-item-remove:hover {
+            background: rgba(255, 143, 143, 0.12);
+        }
+
+        body.dark-mode .file-upload-dropzone {
+            background: #0b1511;
+            border-color: #2f6d4b;
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .file-upload-dropzone:hover,
+        body.dark-mode .file-upload-dropzone.active {
+            background: #13231b;
+            border-color: var(--gc-primary);
+        }
+
+        body.dark-mode .file-upload-note {
+            background: rgba(255, 193, 7, 0.08);
+            border-color: rgba(255, 193, 7, 0.26);
+            border-left-color: var(--gc-secondary);
+        }
+
+        body.dark-mode .guide-card {
+            background: #121a17;
+        }
+
+        body.dark-mode .guide-title i,
+        body.dark-mode .point-pill strong,
+        body.dark-mode .file-list-item-icon {
+            color: var(--gc-primary);
+        }
+
+        body.dark-mode .submit-btn {
+            background: linear-gradient(135deg, #2bbf68, #14723e);
+            color: #ffffff;
+            box-shadow: 0 14px 28px rgba(43, 191, 104, 0.22);
+        }
+
+        body.dark-mode .submit-btn:hover {
+            background: linear-gradient(135deg, #3bd97d, #198a4b);
+            box-shadow: 0 18px 34px rgba(43, 191, 104, 0.28);
+        }
+
+        body.dark-mode .team-selection-controls .btn-secondary {
+            background: #1f8f4f;
+            border-color: #2bbf68;
+            color: #ffffff;
+        }
+
+        body.dark-mode .team-selection-controls .btn-secondary:hover {
+            background: #27a95e;
+            border-color: var(--gc-primary);
+        }
+
+        body.dark-mode .team-selection-controls .btn-outline-secondary {
+            background: transparent;
+            border-color: var(--gc-border);
+            color: var(--gc-muted);
+        }
+
+        body.dark-mode .team-selection-controls .btn-outline-secondary:hover {
+            background: var(--gc-primary-soft);
+            border-color: var(--gc-primary);
+            color: var(--gc-text);
+        }
+
+        body.dark-mode .alert-success {
+            background: rgba(102, 224, 143, 0.12);
+            color: var(--gc-text);
+            border: 1px solid rgba(102, 224, 143, 0.32);
+        }
+
+        body.dark-mode .alert-danger {
+            background: rgba(255, 143, 143, 0.12);
+            color: var(--gc-text);
+            border: 1px solid rgba(255, 143, 143, 0.32);
         }
 
         .alert {

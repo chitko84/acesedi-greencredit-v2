@@ -117,7 +117,7 @@ $club_id_display = (strtolower($submission['category']) === 'low impact')
                             <span class="info-label">Action:</span> <?= htmlspecialchars($submission['action']) ?>
                         </div>
                         <div class="col-md-3 mb-2">
-                            <span class="info-label">Points:</span> <?= $submission['points'] ?>
+                            <span class="info-label">Points:</span> <?= strtolower(trim($submission['status'] ?? '')) === 'approved' ? (int)$submission['points'] : 0 ?>
                         </div>
                         <div class="col-md-3 mb-2">
                             <span class="info-label">Status:</span> 

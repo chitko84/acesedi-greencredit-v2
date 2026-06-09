@@ -18,7 +18,7 @@ $offset = ($page - 1) * $per_page;
 // -------------------------
 $user_query = $conn->query("SELECT id, name, email, date_of_birth, phone_number, 
                             program_of_study, intake, country, gender, department, 
-                            expected_graduation_year, created_at, eco_points 
+                            expected_graduation_year, created_at
                             FROM users");
 $users = [];
 if ($user_query) {
@@ -35,7 +35,6 @@ if ($user_query) {
             'department' => $row['department'],
             'expected_graduation_year' => $row['expected_graduation_year'],
             'created_at' => $row['created_at'],
-            'eco_points' => $row['eco_points'],
             'calculated_points' => 0
         ];
     }
@@ -54,7 +53,7 @@ foreach ($users as $id => $user) {
 // Fetch approved submissions only and compute calculated_points.
 // Pending/rejected submissions must not count toward leaderboard ranking.
 // -------------------------
-$submissions_query = "SELECT user_id, points, team_members FROM submissions WHERE status = 'approved'";
+$submissions_query = "SELECT user_id, points, team_members FROM submissions WHERE LOWER(TRIM(status)) = 'approved'";
 $result = $conn->query($submissions_query);
 
 if ($result) {
@@ -93,10 +92,7 @@ uasort($users_with_points, function ($a, $b) {
     // Primary: calculated_points desc
     $cmp = $b['calculated_points'] <=> $a['calculated_points'];
     if ($cmp !== 0) return $cmp;
-    // Secondary (optional): eco_points desc
-    $cmp2 = $b['eco_points'] <=> $a['eco_points'];
-    if ($cmp2 !== 0) return $cmp2;
-    // Tertiary: name asc for stable ordering
+    // Secondary: name asc for stable ordering
     return strcmp($a['name'], $b['name']);
 });
 
@@ -118,7 +114,6 @@ foreach ($users_with_points as $user_id => $user_data) {
         'department' => $user_data['department'],
         'expected_graduation_year' => $user_data['expected_graduation_year'],
         'created_at' => $user_data['created_at'],
-        'eco_points' => (int) $user_data['eco_points'],
         'calculated_points' => (int) $user_data['calculated_points']
     ];
 }

@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id']; // Assuming you store the user's ID in the session
 
 // Fetch rewards based on user_id from the submissions table
-$query = "SELECT * FROM submissions WHERE user_id = ? AND reward IS NOT NULL ORDER BY created_at DESC"; // Only fetch submissions with a reward
+$query = "SELECT * FROM submissions WHERE user_id = ? AND reward IS NOT NULL AND LOWER(TRIM(status)) = 'approved' ORDER BY created_at DESC"; // Only fetch approved submissions with a reward
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -57,7 +57,7 @@ $rewards_result = $stmt->get_result();
                 <tr>
                     <td><?php echo htmlspecialchars($reward['category']); ?></td>
                     <td><?php echo htmlspecialchars($reward['action']); ?></td>
-                    <td><?php echo $reward['points']; ?></td>
+                    <td><?php echo strtolower(trim($reward['status'] ?? '')) === 'approved' ? (int)$reward['points'] : 0; ?></td>
                     <td>
                         <span class="badge 
                             <?php 

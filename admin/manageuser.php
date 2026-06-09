@@ -307,7 +307,7 @@ if ($users_result) {
 }
 
 // Fetch approved submissions only for points/submission totals.
-$submissions_query = "SELECT id, user_id, points, team_members FROM submissions WHERE status = 'approved'";
+$submissions_query = "SELECT id, user_id, points, team_members FROM submissions WHERE LOWER(TRIM(status)) = 'approved'";
 $submissions_result = $conn->query($submissions_query);
 
 if ($submissions_result && $submissions_result->num_rows > 0) {

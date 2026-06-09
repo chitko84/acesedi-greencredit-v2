@@ -19,11 +19,11 @@ if ($role !== 'admin') {
 $exports = [
     'users' => [
         'filename' => 'greencredit_users.csv',
-        'sql' => "SELECT id, name, date_of_birth, phone_number, email, role, eco_points, profile_pic, program_of_study, intake, country, gender, department, expected_graduation_year, created_at, reset_token, token_expiry FROM users ORDER BY id ASC",
+        'sql' => "SELECT u.id, u.name, u.date_of_birth, u.phone_number, u.email, u.role, (COALESCE(sp.points, 0) + COALESCE(tp.points, 0)) AS eco_points, u.profile_pic, u.program_of_study, u.intake, u.country, u.gender, u.department, u.expected_graduation_year, u.created_at, u.reset_token, u.token_expiry FROM users u LEFT JOIN (SELECT user_id, SUM(points) AS points FROM submissions WHERE LOWER(TRIM(status)) = 'approved' GROUP BY user_id) sp ON sp.user_id = u.id LEFT JOIN (SELECT tm.id AS user_id, SUM(s.points) AS points FROM users tm JOIN submissions s ON JSON_CONTAINS(s.team_members, JSON_QUOTE(tm.name)) AND s.user_id <> tm.id WHERE LOWER(TRIM(s.status)) = 'approved' GROUP BY tm.id) tp ON tp.user_id = u.id ORDER BY u.id ASC",
     ],
     'submissions' => [
         'filename' => 'greencredit_submissions.csv',
-        'sql' => "SELECT s.*, u.name AS submitter_name, u.email AS submitter_email FROM submissions s LEFT JOIN users u ON s.user_id = u.id ORDER BY s.created_at DESC",
+        'sql' => "SELECT s.id, s.user_id, s.category, s.action, CASE WHEN LOWER(TRIM(s.status)) = 'approved' THEN s.points ELSE 0 END AS points, s.proof_image, s.status, s.created_at, s.reward, s.description, s.admin_remarks, s.verified_date, s.team_number, s.team_members, s.three_zero_cluster, s.club_id, s.superadmin_remarks, u.name AS submitter_name, u.email AS submitter_email FROM submissions s LEFT JOIN users u ON s.user_id = u.id ORDER BY s.created_at DESC",
     ],
     'messages' => [
         'filename' => 'greencredit_contact_messages.csv',
@@ -35,11 +35,11 @@ $exports = [
     ],
     'rewards' => [
         'filename' => 'greencredit_rewards.csv',
-        'sql' => "SELECT * FROM submissions ORDER BY created_at DESC",
+        'sql' => "SELECT id, user_id, category, action, CASE WHEN LOWER(TRIM(status)) = 'approved' THEN points ELSE 0 END AS points, proof_image, status, created_at, reward, description, admin_remarks, verified_date, team_number, team_members, three_zero_cluster, club_id, superadmin_remarks FROM submissions ORDER BY created_at DESC",
     ],
     'leaderboard' => [
         'filename' => 'greencredit_leaderboard_source.csv',
-        'sql' => "SELECT s.*, u.name AS submitter_name, u.email AS submitter_email FROM submissions s LEFT JOIN users u ON s.user_id = u.id WHERE s.status = 'approved' ORDER BY s.created_at DESC",
+        'sql' => "SELECT s.*, u.name AS submitter_name, u.email AS submitter_email FROM submissions s LEFT JOIN users u ON s.user_id = u.id WHERE LOWER(TRIM(s.status)) = 'approved' ORDER BY s.created_at DESC",
     ],
 ];
 

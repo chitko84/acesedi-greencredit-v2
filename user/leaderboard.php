@@ -17,7 +17,7 @@ foreach ($users as $id => $user) {
 }
 
 // Fetch approved submissions only. Pending/rejected submissions must not count.
-$submissions_query = "SELECT user_id, points, team_members FROM submissions WHERE status = 'approved'";
+$submissions_query = "SELECT user_id, points, team_members FROM submissions WHERE LOWER(TRIM(status)) = 'approved'";
 $result = $conn->query($submissions_query);
 
 if ($result) {

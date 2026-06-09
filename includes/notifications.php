@@ -14,6 +14,7 @@ function notifySubmissionAction($conn, $submission_id, $action, $remarks) {
     $stmt->close();
 
     if (!$submission) return;
+    $display_points = strtolower(trim($submission['status'] ?? '')) === 'approved' ? (int)$submission['points'] : 0;
 
     // Get all admin emails
     $admins = [];
@@ -45,7 +46,7 @@ function notifySubmissionAction($conn, $submission_id, $action, $remarks) {
             <h2>Submission #{$submission_id} has been " . htmlspecialchars($action) . ".</h2>
             <p><strong>Category:</strong> " . htmlspecialchars($submission['category']) . "</p>
             <p><strong>Action:</strong> " . htmlspecialchars($submission['action']) . "</p>
-            <p><strong>Points:</strong> " . htmlspecialchars($submission['points']) . "</p>
+            <p><strong>Points:</strong> " . htmlspecialchars($display_points) . "</p>
             <p><strong>Status:</strong> " . htmlspecialchars($submission['status']) . "</p>
             " . ($remarks ? "<p><strong>Remarks:</strong> " . nl2br(htmlspecialchars($remarks)) . "</p>" : "") . "
             <p><strong>Description:</strong><br>" . nl2br(htmlspecialchars($submission['description'])) . "</p>

@@ -13,7 +13,7 @@ if (!$user_id) {
     exit();
 }
 
-$query = "SELECT * FROM submissions WHERE user_id = ? AND reward IS NOT NULL ORDER BY created_at DESC";
+ $query = "SELECT * FROM submissions WHERE user_id = ? AND reward IS NOT NULL AND LOWER(TRIM(status)) = 'approved' ORDER BY created_at DESC";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -47,7 +47,7 @@ $rewards_result = $stmt->get_result();
             <?php while ($reward = $rewards_result->fetch_assoc()) { ?>
                 <tr>
                     <td><?php echo htmlspecialchars($reward['reward']); ?></td>
-                    <td><?php echo $reward['points']; ?></td>
+                    <td><?php echo strtolower(trim($reward['status'] ?? '')) === 'approved' ? (int)$reward['points'] : 0; ?></td>
                     <td><?php echo $reward['created_at']; ?></td>
                 </tr>
             <?php } ?>

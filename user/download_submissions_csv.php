@@ -38,6 +38,7 @@ while ($row = $result->fetch_assoc()) {
     $team_members = json_decode($row['team_members'], true);
     if (!is_array($team_members)) $team_members = [];
     $team_string = implode(", ", $team_members);
+    $display_points = strtolower(trim($row['status'] ?? '')) === 'approved' ? (int)$row['points'] : 0;
 
     $verified_date = ($row['verified_date'] && $row['verified_date'] !== '0000-00-00 00:00:00')
         ? date('d M Y, H:i', strtotime($row['verified_date']))
@@ -46,7 +47,7 @@ while ($row = $result->fetch_assoc()) {
     fputcsv($output, [
         $row['category'],
         $row['action'],
-        $row['points'],
+        $display_points,
         ucfirst($row['status']),
         $verified_date,
         $team_string

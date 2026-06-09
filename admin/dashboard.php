@@ -164,8 +164,8 @@ if ($users_result && $users_result->num_rows > 0) {
     }
 }
 
-// Get all submissions with their three_zero_cluster data
-$cluster_query = "SELECT id, user_id, three_zero_cluster, status, team_members FROM submissions";
+// Get approved submissions with their three_zero_cluster data for contributor rankings
+$cluster_query = "SELECT id, user_id, three_zero_cluster, status, team_members FROM submissions WHERE LOWER(TRIM(status)) = 'approved'";
 $cluster_result = $conn->query($cluster_query);
 
 if ($cluster_result && $cluster_result->num_rows > 0) {
@@ -487,6 +487,71 @@ $cluster_values = [
             border-radius: 8px 8px 0 0;
             margin-right: 5px;
             font-weight: 500;
+        }
+
+        body.dark-mode .card-header.bg-light:has(.fa-seedling) {
+            background: #111c17 !important;
+            color: #e8fff0 !important;
+            border: 1px solid #244638 !important;
+        }
+
+        body.dark-mode .card-header.bg-light:has(.fa-seedling) h5,
+        body.dark-mode .card-header.bg-light:has(.fa-seedling) i {
+            color: #7df0a0 !important;
+        }
+
+        body.dark-mode .card-header.bg-light h5:has(.fa-seedling) {
+            color: #e8fff0 !important;
+        }
+
+        body.dark-mode .dashboard-section .stat-card {
+            background: #111c17 !important;
+            border: 1px solid #244638 !important;
+            color: #e8fff0 !important;
+        }
+
+        body.dark-mode .dashboard-section .card-header.bg-light {
+            background: #111c17 !important;
+            border-bottom: 1px solid #244638 !important;
+            color: #e8fff0 !important;
+        }
+
+        body.dark-mode .dashboard-section .card-header h5,
+        body.dark-mode .dashboard-section .card-header .text-muted {
+            color: #e8fff0 !important;
+        }
+
+        body.dark-mode .dashboard-section .category-tabs {
+            border-bottom-color: #244638 !important;
+        }
+
+        body.dark-mode .dashboard-section .category-tabs .nav-link {
+            background: #121a17 !important;
+            border-color: #244638 #244638 transparent !important;
+            color: #b8cfc1 !important;
+        }
+
+        body.dark-mode .dashboard-section .category-tabs .nav-link:hover,
+        body.dark-mode .dashboard-section .category-tabs .nav-link:focus {
+            background: rgba(46, 204, 113, 0.14) !important;
+            border-color: #2ecc71 #2ecc71 #244638 !important;
+            color: #e8fff0 !important;
+        }
+
+        body.dark-mode .dashboard-section .category-tabs .nav-link.active {
+            background: #1f7a4a !important;
+            border-color: #2ecc71 #2ecc71 #1f7a4a !important;
+            color: #ffffff !important;
+        }
+
+        body.dark-mode .dashboard-section .tab-content {
+            background: #111c17;
+            border-color: #244638;
+            color: #e8fff0;
+        }
+
+        body.dark-mode .dashboard-section .stats-table {
+            color: #e8fff0 !important;
         }
         
         /* Responsive adjustments */

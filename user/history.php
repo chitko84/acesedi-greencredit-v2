@@ -305,7 +305,7 @@ if ($total_submissions > 0) {
                         </td>
                         <td><?= htmlspecialchars($submission['category']); ?></td>
                         <td><?= htmlspecialchars($submission['action']); ?></td>
-                        <td><?= htmlspecialchars($submission['points']); ?></td>
+                        <td><?= htmlspecialchars(strtolower(trim($submission['status'] ?? '')) === 'approved' ? (int)$submission['points'] : 0); ?></td>
                         <td>
                             <span class="badge 
                                 <?php 

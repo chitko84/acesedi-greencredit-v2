@@ -45,7 +45,9 @@ $submission_result = $submission_stmt->get_result();
 // Calculate total points (submitter + team member)
 $total_points = 0;
 foreach ($submission_result as $sub) {
-    $total_points += $sub['points'];
+    if (strtolower(trim($sub['status'] ?? '')) === 'approved') {
+        $total_points += (int)$sub['points'];
+    }
 }
 // Reset pointer for later fetch_assoc() usage
 $submission_result->data_seek(0);
@@ -63,7 +65,7 @@ foreach ($submission_result as $submission) {
     $category_counts[$category]++;
 
     // Chart 2: Points per submission (label as "Category - Date")
-    $submission_points[] = (int)$submission['points'];
+    $submission_points[] = strtolower(trim($submission['status'] ?? '')) === 'approved' ? (int)$submission['points'] : 0;
     $label = $submission['category'] . ' (' . date('d M', strtotime($submission['created_at'])) . ')';
     $submission_labels[] = $label;
 }
@@ -90,7 +92,7 @@ foreach ($__users as $__id => $__u) {
 }
 
 // Aggregate points for submitters + teammates
-$__allSubs = $conn->query("SELECT user_id, points, team_members FROM submissions");
+$__allSubs = $conn->query("SELECT user_id, points, team_members FROM submissions WHERE LOWER(TRIM(status)) = 'approved'");
 if ($__allSubs) {
     while ($__row = $__allSubs->fetch_assoc()) {
         $__submitter = (int)$__row['user_id'];
@@ -607,6 +609,7 @@ $submission_result->data_seek(0);
                         while ($submission = $submission_result->fetch_assoc()) { 
                             if ($count >= 5) break;
                             $count++;
+                            $display_points = strtolower(trim($submission['status'] ?? '')) === 'approved' ? (int)$submission['points'] : 0;
                             
                             // Decode team members JSON array (names)
                             $team_members = json_decode($submission['team_members'], true);
@@ -639,7 +642,7 @@ $submission_result->data_seek(0);
                                 </td>
                                 <td><?= htmlspecialchars($submission['category']); ?></td>
                                 <td><?= htmlspecialchars($submission['action']); ?></td>
-                                <td><?= htmlspecialchars($submission['points']); ?></td>
+                                <td><?= htmlspecialchars($display_points); ?></td>
                                 <td>
                                     <span class="badge 
                                         <?php 

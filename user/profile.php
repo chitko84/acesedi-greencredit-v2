@@ -183,7 +183,7 @@ foreach ($users as $uid => $urow) {
     $nameToIdMap[$urow['name']] = $uid; // used only if team_members contains names
 }
 
-$submissions_query = "SELECT user_id, points, team_members FROM submissions";
+$submissions_query = "SELECT user_id, points, team_members FROM submissions WHERE LOWER(TRIM(status)) = 'approved'";
 $result = $conn->query($submissions_query);
 if ($result) {
     while ($sub = $result->fetch_assoc()) {
