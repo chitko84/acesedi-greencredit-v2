@@ -64,21 +64,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $allowed_types = [
         'image/png',
         'image/jpeg',
-        'image/jpg',
         'image/gif',
+        'image/webp',
         'application/pdf'
     ];
-    $max_file_size = 15 * 1024 * 1024; // 15 MB
+    $allowed_extensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'];
+    $max_file_size = 1048576; // 1 MB
     
     $uploaded_files = $_FILES['proof_image'];
     $num_files = count(array_filter($uploaded_files['name']));
 
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $detected_types = [];
+    for ($i = 0; $i < $num_files; $i++) {
+        $detected_types[] = $finfo->file($uploaded_files['tmp_name'][$i]);
+    }
+
     // Check PDF vs Image rules
-    $pdf_files = array_filter($uploaded_files['type'], function($type) {
+    $pdf_files = array_filter($detected_types, function($type) {
         return $type === 'application/pdf';
-    });
-    $image_files = array_filter($uploaded_files['type'], function($type) {
-        return in_array($type, ['image/png', 'image/jpeg', 'image/jpg', 'image/gif']);
     });
     
     // If PDFs are uploaded
@@ -107,36 +111,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    $uploaded_file_names = [];
+    $validated_uploads = [];
     
     for ($i = 0; $i < $num_files; $i++) {
-        $file_type = $uploaded_files['type'][$i];
+        $file_type = $detected_types[$i];
         $file_size = $uploaded_files['size'][$i];
+        $extension = strtolower(pathinfo($uploaded_files['name'][$i], PATHINFO_EXTENSION));
     
         // Check file type
-        if (!in_array($file_type, $allowed_types)) {
-            $_SESSION['error'] = "Only PNG, JPG, JPEG, GIF, and PDF files are allowed.";
+        if (!in_array($file_type, $allowed_types, true) || !in_array($extension, $allowed_extensions, true)) {
+            $_SESSION['error'] = "Only PNG, JPG, JPEG, GIF, WEBP, and PDF files are allowed.";
             header('Location: submit_item.php');
             exit();
         }
     
         // Check file size
         if ($file_size > $max_file_size) {
-            $_SESSION['error'] = "Each file must be less than 15 MB.";
+            $_SESSION['error'] = "Each evidence file must be 1MB or below.";
             header('Location: submit_item.php');
             exit();
         }
-    
-        // Process file upload
-        $tmp_name = $uploaded_files['tmp_name'][$i];
-        $original_name = basename($uploaded_files['name'][$i]);
-        $target_dir = "uploads/";
+
+        $validated_uploads[] = [
+            'tmp_name' => $uploaded_files['tmp_name'][$i],
+            'original_name' => basename($uploaded_files['name'][$i]),
+        ];
+    }
+
+    $uploaded_file_names = [];
+    $target_dir = "uploads/";
+    foreach ($validated_uploads as $upload) {
+        $tmp_name = $upload['tmp_name'];
+        $original_name = $upload['original_name'];
         $new_name = uniqid() . "-" . preg_replace("/[^a-zA-Z0-9.\-_]/", "", $original_name);
         $target_file = $target_dir . $new_name;
     
         if (move_uploaded_file($tmp_name, $target_file)) {
             $uploaded_file_names[] = $new_name;
         } else {
+            foreach ($uploaded_file_names as $uploaded_name) {
+                $uploaded_path = $target_dir . basename($uploaded_name);
+                if (file_exists($uploaded_path)) {
+                    @unlink($uploaded_path);
+                }
+            }
             $_SESSION['error'] = "Error uploading file: " . htmlspecialchars($original_name);
             header('Location: submit_item.php');
             exit();
@@ -1482,7 +1500,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <strong>Drop your files here</strong> or click to browse
                                 </div>
                                 <div class="mb-3">
-                                    <small class="text-muted">Supported formats: PDF, PNG, JPG, JPEG, GIF</small>
+                                    <small class="text-muted">Supported formats: PDF, PNG, JPG, JPEG, GIF, WEBP. Max 1MB per file.</small>
                                 </div>
                                 <button type="button" class="file-upload-btn" id="fileUploadBtn">
                                     <i class="fas fa-folder-open me-1"></i> Choose Files
@@ -1494,7 +1512,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 class="d-none"
                                 id="proof_image"
                                 name="proof_image[]"
-                                accept="image/png,image/jpeg,image/jpg,image/gif,application/pdf"
+                                accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,application/pdf"
                                 multiple
                                 required
                             />
@@ -1505,10 +1523,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="file-upload-note">
                             <strong><i class="fas fa-info-circle me-2"></i>Upload Rules</strong>
                             <ul class="mb-0 mt-2">
-                                <li>Submit 2–5 images for PNG, JPG, JPEG, or GIF.</li>
+                                <li>Submit 2–5 images for PNG, JPG, JPEG, GIF, or WEBP.</li>
                                 <li>Submit exactly 1 file if the proof is PDF.</li>
                                 <li>Do not mix PDF with images.</li>
-                                <li>Maximum file size is 15 MB per file.</li>
+                                <li>Maximum file size is 1MB per file.</li>
                             </ul>
                         </div>
                     </section>
@@ -1580,7 +1598,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <li>Images: 2–5 files.</li>
                         <li>PDF: exactly 1 file.</li>
                         <li>Do not mix PDF and images.</li>
-                        <li>Max 15 MB per file.</li>
+                        <li>Max 1MB per file.</li>
                     </ul>
                 </div>
 
@@ -2096,6 +2114,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             
             // Validate file upload with PDF special rule
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/pdf'];
+            const maxFileSize = 1048576;
+            for (const file of filesArray) {
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Only PNG, JPG, JPEG, GIF, WEBP, and PDF files are allowed.');
+                    return false;
+                }
+                if (file.size > maxFileSize) {
+                    alert('Each evidence file must be 1MB or below.');
+                    return false;
+                }
+            }
             const pdfFiles = filesArray.filter(file => file.type === 'application/pdf');
             const imageFiles = filesArray.filter(file => file.type.startsWith('image/'));
             

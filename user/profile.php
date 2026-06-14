@@ -232,13 +232,8 @@ if ($total_points > 0) {
     }
 }
 
-// Compute profile pic src reliably whether DB stored filename or path
-$picValue = $user_row['profile_pic'] ?: 'default-profile.jpg';
-if (strpos($picValue, 'uploads/') !== false || strpos($picValue, '../uploads/') !== false) {
-    $profile_pic_src = $picValue; // already a path
-} else {
-    $profile_pic_src = '../uploads/' . $picValue; // stored as filename
-}
+include_once __DIR__ . '/../includes/profile_image.php';
+$profile_pic_src = gc_profile_image_src($user_row['profile_pic'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -7,6 +7,97 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+$users = [];
+$users_stmt = $conn->prepare("SELECT id, name, email FROM users WHERE role = 'user' ORDER BY name ASC");
+$users_stmt->execute();
+$users_result = $users_stmt->get_result();
+while ($row = $users_result->fetch_assoc()) {
+    if (filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
+        $users[] = $row;
+    }
+}
+$users_stmt->close();
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['send_admin_email'])) {
+    $recipient_mode = $_POST['recipient_mode'] ?? '';
+    $subject = trim($_POST['email_subject'] ?? '');
+    $body = trim($_POST['email_message'] ?? '');
+    $selected_users = $_POST['selected_users'] ?? [];
+    $recipient_emails = [];
+
+    if ($subject === '' || $body === '') {
+        $_SESSION['error'] = "Subject and message are required.";
+        header('Location: message.php');
+        exit();
+    }
+
+    if ($recipient_mode === 'all') {
+        foreach ($users as $user) {
+            $recipient_emails[] = $user['email'];
+        }
+    } elseif ($recipient_mode === 'single' || $recipient_mode === 'multiple') {
+        $selected_ids = array_values(array_unique(array_map('intval', (array) $selected_users)));
+        if (empty($selected_ids)) {
+            $_SESSION['error'] = "Please select at least one user.";
+            header('Location: message.php');
+            exit();
+        }
+
+        $placeholders = implode(',', array_fill(0, count($selected_ids), '?'));
+        $types = str_repeat('i', count($selected_ids));
+        $stmt = $conn->prepare("SELECT email FROM users WHERE role = 'user' AND id IN ($placeholders)");
+        $stmt->bind_param($types, ...$selected_ids);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            if (filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
+                $recipient_emails[] = $row['email'];
+            }
+        }
+        $stmt->close();
+    } else {
+        $_SESSION['error'] = "Please choose a valid recipient mode.";
+        header('Location: message.php');
+        exit();
+    }
+
+    $recipient_emails = array_values(array_unique($recipient_emails));
+    if (empty($recipient_emails)) {
+        $_SESSION['error'] = "No valid user email addresses found.";
+        header('Location: message.php');
+        exit();
+    }
+
+    $headers = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+    $headers .= "From: GreenCredit <no-reply@greencredit.com>\r\n";
+
+    $html_message = nl2br(htmlspecialchars($body));
+    $email_body = "
+        <html>
+        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <p>{$html_message}</p>
+            <hr>
+            <p style='font-size: 12px; color: #888;'>This message was sent by the GreenCredit Admin Team.</p>
+        </body>
+        </html>
+    ";
+
+    $sent = 0;
+    $failed = 0;
+    foreach ($recipient_emails as $email) {
+        if (mail($email, $subject, $email_body, $headers)) {
+            $sent++;
+        } else {
+            $failed++;
+        }
+    }
+
+    $_SESSION['success'] = "Email sent to {$sent} user(s)." . ($failed > 0 ? " Failed for {$failed} recipient(s)." : "");
+    header('Location: message.php');
+    exit();
+}
+
 // Handle deleting all messages
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_all'])) {
     $delete_query = "DELETE FROM contact_messages";
@@ -123,6 +214,49 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['message_id'])) {
     }
     ?>
 
+    <div class="alert alert-info">
+        Email sending may require server mail configuration. This may not work on localhost but should work after hosting.
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            Send Email to Users
+        </div>
+        <div class="card-body">
+            <form action="message.php" method="POST">
+                <input type="hidden" name="send_admin_email" value="1">
+                <div class="mb-3">
+                    <label class="form-label">Recipients</label>
+                    <select class="form-select" name="recipient_mode" id="recipientMode" required>
+                        <option value="">Choose recipient mode</option>
+                        <option value="all">All Users</option>
+                        <option value="single">Single User</option>
+                        <option value="multiple">Multiple Users</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="userSelectWrap" style="display:none;">
+                    <label class="form-label">Select User(s)</label>
+                    <select class="form-select" name="selected_users[]" id="selectedUsers">
+                        <?php foreach ($users as $user): ?>
+                            <option value="<?= (int) $user['id']; ?>">
+                                <?= htmlspecialchars($user['name'] . ' (' . $user['email'] . ')'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Subject</label>
+                    <input type="text" class="form-control" name="email_subject" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-control" name="email_message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Send Email</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Delete All Messages Button -->
     <form class="text-center mb-4" action="message.php" method="POST" data-confirm="Are you sure you want to delete ALL messages? This action cannot be undone.">
         <button type="submit" name="delete_all" class="btn btn-danger mb-4">
@@ -198,6 +332,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['message_id'])) {
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mode = document.getElementById('recipientMode');
+    const wrap = document.getElementById('userSelectWrap');
+    const select = document.getElementById('selectedUsers');
+    if (!mode || !wrap || !select) return;
+
+    mode.addEventListener('change', function() {
+        if (this.value === 'single') {
+            wrap.style.display = 'block';
+            select.multiple = false;
+            select.required = true;
+        } else if (this.value === 'multiple') {
+            wrap.style.display = 'block';
+            select.multiple = true;
+            select.required = true;
+        } else {
+            wrap.style.display = 'none';
+            select.multiple = false;
+            select.required = false;
+        }
+    });
+});
+</script>
 
 </body>
 </html>

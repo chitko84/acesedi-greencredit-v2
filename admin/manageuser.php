@@ -19,7 +19,8 @@ $result = $stmt->get_result();
 $user_data = $result->fetch_assoc();
 if ($user_data['role'] === 'admin') {
     // Super admins
-    $is_super_admin = in_array($logged_in_user_id, [47]);
+    include_once __DIR__ . '/../includes/super_admin.php';
+    $is_super_admin = gc_is_super_admin($conn, (int) $logged_in_user_id);
 }
 
 // ---------------- Bulk delete handling (super-admin only) ----------------
@@ -273,10 +274,10 @@ $user_sort_options = [
 
 // safe search param for links
 $search_query_param = !empty($search) ? '&search=' . urlencode($search) : '';
-$per_page_param = $_GET['per_page'] ?? '10';
-$allowed_per_page = ['10', '25', '50', '100', 'all'];
+$per_page_param = $_GET['limit'] ?? ($_GET['per_page'] ?? '10');
+$allowed_per_page = ['10', '25', '50', '100', '200', 'all'];
 $per_page_param = in_array($per_page_param, $allowed_per_page, true) ? $per_page_param : '10';
-$per_page_query_param = '&per_page=' . urlencode($per_page_param);
+$per_page_query_param = '&limit=' . urlencode($per_page_param);
 
 // --- Fetch all users (we will calculate points/submissions using all users, then paginate the final array) ---
 if (!empty($search)) {
@@ -483,8 +484,11 @@ $paged_users = $per_page_param === 'all' ? $final_users : array_slice($final_use
 
 // helper to build links preserving current GET params
 function build_page_link($page) {
+    global $per_page_param;
     $params = $_GET;
     $params['page'] = $page;
+    $params['limit'] = $per_page_param;
+    unset($params['per_page']);
     return '?' . http_build_query($params);
 }
 
@@ -565,6 +569,32 @@ $colspan = $is_super_admin ? 16 : 15;
             align-items: center;
             flex-wrap: wrap;
             margin-bottom: 1rem;
+        }
+        .export-csv-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+            padding: .55rem .95rem;
+            border-radius: 10px;
+            border-color: #2E8B57;
+            color: #1f7a49;
+            font-weight: 700;
+            line-height: 1.2;
+            box-shadow: 0 8px 18px rgba(46,139,87,.08);
+            transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, color .18s ease;
+        }
+        .export-csv-btn:hover,
+        .export-csv-btn:focus {
+            background-color: #2E8B57;
+            border-color: #2E8B57;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(46,139,87,.18);
+        }
+        .export-csv-btn i {
+            font-size: .95rem;
+            line-height: 1;
         }
         .sort-panel {
             border: 1px solid rgba(46,139,87,.14);
@@ -664,7 +694,7 @@ $colspan = $is_super_admin ? 16 : 15;
             <button type="button" class="btn btn-success" id="toggleAnalyticsBtn">
                 <i class="fas fa-chart-pie me-1"></i> Show Analytics
             </button>
-            <a class="btn btn-outline-success" href="export_csv.php?table=users">
+            <a class="btn btn-outline-success export-csv-btn" href="export_csv.php?table=users">
                 <i class="fas fa-file-csv me-1"></i> Export CSV
             </a>
         </div>
@@ -672,9 +702,9 @@ $colspan = $is_super_admin ? 16 : 15;
             <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
             <input type="hidden" name="sort_by" value="<?= htmlspecialchars($sort_by) ?>">
             <input type="hidden" name="sort_order" value="<?= htmlspecialchars($sort_order) ?>">
-            <label for="per_page" class="fw-semibold mb-0">Rows</label>
-            <select name="per_page" id="per_page" class="form-select" style="width:auto;" onchange="this.form.submit()">
-                <?php foreach (['10','25','50','100','all'] as $option): ?>
+            <label for="limit" class="fw-semibold mb-0">Rows per page</label>
+            <select name="limit" id="limit" class="form-select" style="width:auto;" onchange="this.form.submit()">
+                <?php foreach (['10','25','50','100','200','all'] as $option): ?>
                     <option value="<?= $option ?>" <?= $per_page_param === $option ? 'selected' : '' ?>><?= $option === 'all' ? 'All rows' : $option . ' rows' ?></option>
                 <?php endforeach; ?>
             </select>
@@ -708,6 +738,9 @@ $colspan = $is_super_admin ? 16 : 15;
 
     <!-- Search -->
     <form method="GET" class="mb-4">
+        <input type="hidden" name="limit" value="<?= htmlspecialchars($per_page_param) ?>">
+        <input type="hidden" name="sort_by" value="<?= htmlspecialchars($sort_by) ?>">
+        <input type="hidden" name="sort_order" value="<?= htmlspecialchars($sort_order) ?>">
         <div class="row justify-content-center mb-2">
             <div class="col-12 col-md-6">
                 <input type="text" name="search" class="form-control" placeholder="Search user by name..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
@@ -729,7 +762,7 @@ $colspan = $is_super_admin ? 16 : 15;
                 <h5 class="mb-1"><i class="fas fa-arrow-up-wide-short me-2 text-success"></i>Sort Users</h5>
                 <div class="text-muted small">Current view: <?= htmlspecialchars($active_sort_label) ?></div>
             </div>
-            <a class="btn btn-sm btn-outline-secondary" href="manageuser.php?per_page=<?= urlencode($per_page_param) ?>">
+            <a class="btn btn-sm btn-outline-secondary" href="manageuser.php?limit=<?= urlencode($per_page_param) ?>">
                 <i class="fas fa-rotate-left me-1"></i> Reset
             </a>
         </div>
@@ -777,7 +810,8 @@ $colspan = $is_super_admin ? 16 : 15;
                 <?php else: ?>
                     <?php foreach ($paged_users as $user):
                         $uid = $user['id'];
-                        $profile_pic = $user['profile_pic'] ?: 'default-profile.jpg';
+                        include_once __DIR__ . '/../includes/profile_image.php';
+                        $profile_pic_src = gc_profile_image_src($user['profile_pic'] ?? '');
                         $submission_count = $user['submission_count'] ?? 0;
                     ?>
                         <tr>
@@ -802,7 +836,7 @@ $colspan = $is_super_admin ? 16 : 15;
                             <td><a href="user_submissions.php?user_id=<?= $uid ?>"><?= $submission_count ?></a></td>
                             <td>
                                 <a href="#" data-bs-toggle="modal" data-bs-target="#profileImageModal-<?= $uid ?>">
-                                    <img src="../uploads/<?= htmlspecialchars($profile_pic) ?>" alt="Profile Picture" class="profile-pic-thumb" />
+                                    <img src="<?= htmlspecialchars($profile_pic_src) ?>" alt="Profile Picture" class="profile-pic-thumb" />
                                 </a>
                                 <div class="modal fade" id="profileImageModal-<?= $uid ?>" tabindex="-1">
                                     <div class="modal-dialog modal-dialog-centered">
@@ -812,7 +846,7 @@ $colspan = $is_super_admin ? 16 : 15;
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body text-center">
-                                                <img src="../uploads/<?= htmlspecialchars($profile_pic) ?>" class="img-fluid rounded" />
+                                                <img src="<?= htmlspecialchars($profile_pic_src) ?>" class="img-fluid rounded" />
                                             </div>
                                         </div>
                                     </div>

@@ -16,8 +16,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Super Admin
-$superAdmins = [47];
-if (!in_array($_SESSION['user_id'], $superAdmins, true)) {
+include_once __DIR__ . '/../includes/super_admin.php';
+if (!gc_is_super_admin($conn, (int) $_SESSION['user_id'])) {
     $_SESSION['error'] = "Forbidden";
     header('Location: manageuser.php');
     exit();

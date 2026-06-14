@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $three_zero_cluster = isset($_POST['three_zero_cluster']) ? $_POST['three_zero_cluster'] : [];
     if (count($three_zero_cluster) < 1 || count($three_zero_cluster) > 3) {
-        $_SESSION['error'] = "Please select at least one and at most three 3ZERO clusters or Your File Size is exceeding maximum limit of 15MB.";
+        $_SESSION['error'] = "Please select at least one and at most three 3ZERO clusters.";
         header("Location: edit_submission.php?id=$submission_id");
         exit();
     }
@@ -117,29 +117,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $team_members_json = json_encode($team_members);
 
-    // Handle file uploads (append to existing)
+    // Handle file uploads and optional replacement
     $proof_files = json_decode($submission['proof_image'], true) ?? [];
     
     // Validate uploaded files
     $allowed_types = [
         'image/png',
         'image/jpeg',
-        'image/jpg',
         'image/gif',
+        'image/webp',
         'application/pdf'
     ];
-    $max_file_size = 15 * 1024 * 1024; // 15 MB
+    $allowed_extensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'];
+    $max_file_size = 1048576; // 1 MB
+    $delete_files = $_POST['delete_files'] ?? [];
+    if (!empty($delete_files)) {
+        $proof_files = array_values(array_filter($proof_files, function($file) use ($delete_files) {
+            return !in_array($file, $delete_files, true);
+        }));
+    }
     
     if (!empty($_FILES['proof_image']['name'][0])) {
         $uploaded_files = $_FILES['proof_image'];
         $num_files = count(array_filter($uploaded_files['name']));
+        $new_uploaded_files = [];
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $detected_types = [];
+        for ($i = 0; $i < $num_files; $i++) {
+            $detected_types[] = $finfo->file($uploaded_files['tmp_name'][$i]);
+        }
 
         // Check PDF vs Image rules
-        $pdf_files = array_filter($uploaded_files['type'], function($type) {
+        $pdf_files = array_filter($detected_types, function($type) {
             return $type === 'application/pdf';
-        });
-        $image_files = array_filter($uploaded_files['type'], function($type) {
-            return in_array($type, ['image/png', 'image/jpeg', 'image/jpg', 'image/gif']);
         });
         
         // If PDFs are uploaded
@@ -168,39 +178,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        $validated_uploads = [];
         for ($i = 0; $i < $num_files; $i++) {
-            $file_type = $uploaded_files['type'][$i];
+            $file_type = $detected_types[$i];
             $file_size = $uploaded_files['size'][$i];
+            $extension = strtolower(pathinfo($uploaded_files['name'][$i], PATHINFO_EXTENSION));
         
             // Check file type
-            if (!in_array($file_type, $allowed_types)) {
-                $_SESSION['error'] = "Only PNG, JPG, JPEG, GIF, and PDF files are allowed.";
+            if (!in_array($file_type, $allowed_types, true) || !in_array($extension, $allowed_extensions, true)) {
+                $_SESSION['error'] = "Only PNG, JPG, JPEG, GIF, WEBP, and PDF files are allowed.";
                 header("Location: edit_submission.php?id=$submission_id");
                 exit();
             }
         
             // Check file size
             if ($file_size > $max_file_size) {
-                $_SESSION['error'] = "Each file must be less than 15 MB.";
+                $_SESSION['error'] = "Each evidence file must be 1MB or below.";
                 header("Location: edit_submission.php?id=$submission_id");
                 exit();
             }
-        
-            // Process file upload
-            $tmp_name = $uploaded_files['tmp_name'][$i];
-            $original_name = basename($uploaded_files['name'][$i]);
-            $target_dir = "uploads/";
+
+            $validated_uploads[] = [
+                'tmp_name' => $uploaded_files['tmp_name'][$i],
+                'original_name' => basename($uploaded_files['name'][$i]),
+            ];
+        }
+
+        $target_dir = "uploads/";
+        foreach ($validated_uploads as $upload) {
+            $tmp_name = $upload['tmp_name'];
+            $original_name = $upload['original_name'];
             $new_name = uniqid() . "-" . preg_replace("/[^a-zA-Z0-9.\-_]/", "", $original_name);
             $target_file = $target_dir . $new_name;
         
             if (move_uploaded_file($tmp_name, $target_file)) {
-                $proof_files[] = $new_name;
+                $new_uploaded_files[] = $new_name;
             } else {
+                foreach ($new_uploaded_files as $uploaded_name) {
+                    $uploaded_path = $target_dir . basename($uploaded_name);
+                    if (file_exists($uploaded_path)) {
+                        @unlink($uploaded_path);
+                    }
+                }
                 $_SESSION['error'] = "Error uploading file: " . htmlspecialchars($original_name);
                 header("Location: edit_submission.php?id=$submission_id");
                 exit();
             }
         }
+
+        foreach ($proof_files as $old_file) {
+            $old_path = "uploads/" . basename($old_file);
+            if (file_exists($old_path)) {
+                @unlink($old_path);
+            }
+        }
+        $proof_files = $new_uploaded_files;
+    }
+
+    foreach ($delete_files as $deleted_file) {
+        $deleted_path = "uploads/" . basename($deleted_file);
+        if (file_exists($deleted_path)) {
+            @unlink($deleted_path);
+        }
+    }
+
+    if (empty($proof_files)) {
+        $_SESSION['error'] = "Please upload at least one file as proof.";
+        header("Location: edit_submission.php?id=$submission_id");
+        exit();
     }
 
     $proof_files_json = json_encode($proof_files, JSON_UNESCAPED_UNICODE);
@@ -215,7 +260,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         three_zero_cluster=?, 
         description=?, 
         proof_image=?,
-        club_id=?
+        club_id=?,
+        status='pending',
+        verified_date=NULL,
+        admin_remarks=NULL,
+        superadmin_remarks=NULL
         WHERE id=? AND user_id=?";
     
     $stmt = $conn->prepare($update_query);
@@ -235,7 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
     if ($stmt->execute()) {
-        $_SESSION['success'] = "Submission updated successfully.";
+        $_SESSION['success'] = "Submission updated successfully and returned to Pending for admin review.";
         header("Location: dashboard.php");
         exit();
     } else {
@@ -856,7 +905,7 @@ $current_proof_files = json_decode($submission['proof_image'], true) ?? [];
                 <strong>Drop your files here</strong> or click to browse
             </div>
             <div class="mb-2">
-                <small class="text-muted">Supported formats: PDF, PNG, JPG, JPEG, GIF</small>
+                <small class="text-muted">Supported formats: PDF, PNG, JPG, JPEG, GIF, WEBP. Max 1MB per file.</small>
             </div>
             <button type="button" class="file-upload-btn" id="fileUploadBtn">
                 <i class="fas fa-folder-open me-1"></i> Choose Files
@@ -867,7 +916,7 @@ $current_proof_files = json_decode($submission['proof_image'], true) ?? [];
             class="d-none" 
             id="proof_image" 
             name="proof_image[]" 
-            accept="image/png,image/jpeg,image/jpg,image/gif,application/pdf" 
+            accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,application/pdf" 
             multiple 
         />
         
@@ -897,9 +946,9 @@ $current_proof_files = json_decode($submission['proof_image'], true) ?? [];
     <div class="file-upload-note">
         <strong><i class="fas fa-info-circle me-2"></i>Note:</strong> 
         <ul class="mb-0 mt-2">
-            <li>Submit 2-5 images for PNG, JPG, JPEG, GIF formats</li>
+            <li>Submit 2-5 images for PNG, JPG, JPEG, GIF, or WEBP formats</li>
             <li>Submit 1 file for PDF format</li>
-            <li>Maximum file size is 15 MB per file</li>
+            <li>Maximum file size is 1MB per file</li>
             <li>Files are securely transferred with TLS encryption</li>
         </ul>
     </div>
@@ -939,6 +988,8 @@ $current_proof_files = json_decode($submission['proof_image'], true) ?? [];
         const fileInput = document.getElementById('proof_image');
         const fileList = document.getElementById('file_list');
         let filesArray = [];
+        const allowedEvidenceTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/pdf'];
+        const maxEvidenceSize = 1048576;
         
         // Selected team members tracking
         let selectedTeamMembers = new Set();
@@ -1207,6 +1258,14 @@ $current_proof_files = json_decode($submission['proof_image'], true) ?? [];
             if (e.dataTransfer.files.length) {
                 const newFiles = Array.from(e.dataTransfer.files);
                 newFiles.forEach(file => {
+                    if (!allowedEvidenceTypes.includes(file.type)) {
+                        alert('Only PNG, JPG, JPEG, GIF, WEBP, and PDF files are allowed.');
+                        return;
+                    }
+                    if (file.size > maxEvidenceSize) {
+                        alert('Each evidence file must be 1MB or below.');
+                        return;
+                    }
                     if (!filesArray.some(f => f.name === file.name && f.size === file.size)) {
                         filesArray.push(file);
                     }
@@ -1219,6 +1278,14 @@ $current_proof_files = json_decode($submission['proof_image'], true) ?? [];
         fileInput.addEventListener('change', (event) => {
             const newFiles = Array.from(event.target.files);
             newFiles.forEach(file => {
+                if (!allowedEvidenceTypes.includes(file.type)) {
+                    alert('Only PNG, JPG, JPEG, GIF, WEBP, and PDF files are allowed.');
+                    return;
+                }
+                if (file.size > maxEvidenceSize) {
+                    alert('Each evidence file must be 1MB or below.');
+                    return;
+                }
                 if (!filesArray.some(f => f.name === file.name && f.size === file.size)) {
                     filesArray.push(file);
                 }
@@ -1337,6 +1404,19 @@ $current_proof_files = json_decode($submission['proof_image'], true) ?? [];
                 alert('Please upload at least one file as proof.');
                 event.preventDefault();
                 return;
+            }
+
+            for (const file of filesArray) {
+                if (!allowedEvidenceTypes.includes(file.type)) {
+                    alert('Only PNG, JPG, JPEG, GIF, WEBP, and PDF files are allowed.');
+                    event.preventDefault();
+                    return;
+                }
+                if (file.size > maxEvidenceSize) {
+                    alert('Each evidence file must be 1MB or below.');
+                    event.preventDefault();
+                    return;
+                }
             }
             
             // Check PDF vs image rules

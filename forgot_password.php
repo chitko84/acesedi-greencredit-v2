@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $insert->execute();
 
         // Create reset link
-        $reset_link = "https://ace-sedi.aiu.edu.my/greenCredits/reset_password.php?token=$token";
+        $reset_link = "https://greenyellow-llama-787938.hostingersite.com/greencredit/reset_password.php?token=$token";
 
         // Send email
         $subject = "Password Reset Request - GreenCredits";
@@ -42,6 +42,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <?php include 'includes/header.php'; ?>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+        --primary-green: #2E8B57;
+        --light-green: #E8F5E9;
+        --dark-green: #1B5E20;
+        --white: #FFFFFF;
+        --text-gray: #424242;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: url('assets/images/cfgs-pic.jpg') center center / cover no-repeat fixed !important;
+        color: var(--text-gray);
+        line-height: 1.6;
+        min-height: 100vh;
+    }
+
+    .login-container {
+        max-width: 500px;
+        margin: 5rem auto;
+        padding: 2.5rem;
+        background: rgba(255, 255, 255, 0.94);
+        border-radius: 16px;
+        box-shadow: 0 24px 60px rgba(20, 36, 26, 0.24);
+        backdrop-filter: blur(6px);
+    }
+
+    .login-title {
+        font-weight: 700;
+        color: var(--dark-green);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: var(--text-gray);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 0.25rem rgba(46, 139, 87, 0.25);
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 8px;
+        background-color: var(--primary-green);
+        border: none;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-login:hover {
+        background-color: var(--dark-green);
+        transform: translateY(-2px);
+    }
+
+    .alert-danger,
+    .alert-success {
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    @media (max-width: 576px) {
+        .login-container {
+            margin: 1.25rem;
+            padding: 1.5rem;
+        }
+    }
+</style>
 
 <div class="login-container">
     <h2 class="login-title text-center">Forgot Password</h2>

@@ -561,8 +561,12 @@ $submission_result->data_seek(0);
 
     <div class="row">
         <div class="col-md-4 text-center">
-            <img src="../uploads/<?= (empty($user_data['profile_pic']) || $user_data['profile_pic'] == 'default-profile.jpg') ? 'default-profile.jpg' : htmlspecialchars($user_data['profile_pic']); ?>" 
-            alt="Profile Picture" class="rounded-circle mb-3" width="120" height="120">
+            <?php
+                include_once __DIR__ . '/../includes/profile_image.php';
+                $profilePicSrc = gc_profile_image_src($user_data['profile_pic'] ?? '');
+            ?>
+            <img src="<?= htmlspecialchars($profilePicSrc); ?>" 
+            alt="Profile Picture" class="rounded-circle mb-3" width="120" height="120" style="object-fit: cover;">
             <h4>Name: <?= htmlspecialchars($user_data['name']); ?></h4>
             <p><strong>Points Earned: </strong><?= htmlspecialchars($total_points); ?></p>
             <p><strong>Rank: </strong><?= $user_rank ? '#'.htmlspecialchars($user_rank) : '-' ?></p>
@@ -1001,9 +1005,9 @@ $submission_result->data_seek(0);
         { question: 'What proof files are allowed?', keywords: ['proof files', 'allowed files', 'upload proof'], answer: 'Allowed proof: PNG, JPG, JPEG, GIF images, or PDF.' },
         { question: 'How many images can I upload?', keywords: ['how many images', 'image count', 'upload images'], answer: 'Upload 2 to 5 images if you use image proof.' },
         { question: 'Can I upload PDF files?', keywords: ['upload pdf', 'pdf proof', 'pdf file'], answer: 'Yes. If using PDF proof, upload exactly 1 PDF file.' },
-        { question: 'What is the maximum file size?', keywords: ['max file size', 'maximum size', '15 mb'], answer: 'Each proof file must be 15 MB or less.' },
+        { question: 'What is the maximum file size?', keywords: ['max file size', 'maximum size', '1 mb', '1mb'], answer: 'Each proof file must be 1MB or less.' },
         { question: 'Can I upload both images and PDF?', keywords: ['mix pdf images', 'images and pdf', 'both pdf image'], answer: 'No. Upload either images or one PDF, not both together.' },
-        { question: 'Why was my file rejected?', keywords: ['file rejected', 'upload rejected', 'proof rejected'], answer: 'Files may be rejected for wrong type, too many/few files, mixed PDF/images, or size over 15 MB.' },
+        { question: 'Why was my file rejected?', keywords: ['file rejected', 'upload rejected', 'proof rejected'], answer: 'Files may be rejected for wrong type, too many/few files, mixed PDF/images, or size over 1MB.' },
         { question: 'What makes valid proof?', keywords: ['valid proof', 'good proof', 'proof valid'], answer: 'Valid proof is clear, relevant, and shows the activity happened.' },
         { question: 'What does Pending mean?', keywords: ['pending mean', 'status pending'], answer: 'Pending means your submission is waiting for admin review.' },
         { question: 'What does Approved mean?', keywords: ['approved mean', 'status approved'], answer: 'Approved means admin accepted your submission and it counts for points.' },

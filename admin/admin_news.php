@@ -20,6 +20,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$title || !$date || !$content) {
         $error = "Please fill in all required fields.";
     } else {
+        $target_dir = __DIR__ . "/../uploads/news/";
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $max_file_size = 1048576;
+        $valid_images = [];
+        $file_count = isset($_FILES['images']['name']) ? count(array_filter($_FILES['images']['name'])) : 0;
+
+        if ($file_count < 1) {
+            $error = "Please upload at least 1 image.";
+        } elseif ($file_count > 3) {
+            $error = "You can upload a maximum of 3 images.";
+        } else {
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            foreach ($_FILES['images']['name'] as $key => $name) {
+                if ($_FILES['images']['error'][$key] !== UPLOAD_ERR_OK) {
+                    $error = "Failed to upload " . htmlspecialchars($name) . ". Please try again.";
+                    break;
+                }
+
+                if ($_FILES['images']['size'][$key] > $max_file_size) {
+                    $error = "Image " . htmlspecialchars($name) . " exceeds the 1MB limit.";
+                    break;
+                }
+
+                $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                $mime = $finfo->file($_FILES['images']['tmp_name'][$key]);
+                if (!in_array($extension, $allowed_extensions, true) || !in_array($mime, $allowed_mimes, true)) {
+                    $error = "Only JPG, JPEG, PNG, GIF, and WEBP image files are allowed.";
+                    break;
+                }
+
+                $valid_images[] = [
+                    'tmp_name' => $_FILES['images']['tmp_name'][$key],
+                    'extension' => $extension,
+                ];
+            }
+        }
+
+        if ($error) {
+            // Do not save the news post if any image validation fails.
+        } else {
         // Insert news item
         $stmt = $conn->prepare("INSERT INTO news_events (title, date, content) VALUES (?, ?, ?)");
         if (!$stmt) {
@@ -32,38 +73,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $news_id = $stmt->insert_id;
         $stmt->close();
 
-        // Handle image uploads - same as edit_news.php
-        $target_dir = __DIR__ . "/../uploads/news/";
         if (!is_dir($target_dir)) {
             if (!mkdir($target_dir, 0777, true)) {
                 die("Failed to create upload directory.");
             }
         }
 
-        if (!empty($_FILES['images']['name'][0])) {
-            foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
-                if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
-                    if ($_FILES['images']['size'][$key] <= 5 * 1024 * 1024) { // 5MB limit
-                        $image_name = time() . "_" . basename($_FILES['images']['name'][$key]);
-                        if (move_uploaded_file($tmp_name, $target_dir . $image_name)) {
-                            $stmt_img = $conn->prepare("INSERT INTO news_images (news_id, image) VALUES (?, ?)");
-                            $stmt_img->bind_param("is", $news_id, $image_name);
-                            $stmt_img->execute();
-                            $stmt_img->close();
-                        } else {
-                            $error .= "Failed to upload " . htmlspecialchars($_FILES['images']['name'][$key]) . "<br>";
-                        }
-                    } else {
-                        $error .= "File " . htmlspecialchars($_FILES['images']['name'][$key]) . " exceeds 5MB limit<br>";
-                    }
+            $moved_images = [];
+            foreach ($valid_images as $image) {
+                $image_name = uniqid('news_', true) . '.' . $image['extension'];
+                if (move_uploaded_file($image['tmp_name'], $target_dir . $image_name)) {
+                    $moved_images[] = $image_name;
+                } else {
+                    $error = "Failed to upload one or more images.";
+                    break;
                 }
             }
-        }
+
+            if ($error) {
+                foreach ($moved_images as $image_name) {
+                    @unlink($target_dir . $image_name);
+                }
+                $stmt = $conn->prepare("DELETE FROM news_events WHERE id = ?");
+                $stmt->bind_param("i", $news_id);
+                $stmt->execute();
+                $stmt->close();
+            } else {
+                foreach ($moved_images as $image_name) {
+                    $stmt_img = $conn->prepare("INSERT INTO news_images (news_id, image) VALUES (?, ?)");
+                    $stmt_img->bind_param("is", $news_id, $image_name);
+                    $stmt_img->execute();
+                    $stmt_img->close();
+                }
 
         // Redirect to prevent duplicate submissions
         $_SESSION['message'] = "News added successfully!";
         header("Location: admin_news.php");
         exit();
+            }
+        }
     }
 }
 
@@ -442,8 +490,9 @@ if (!$result) {
     <label>Content:</label><br>
     <textarea name="content" rows="5" required></textarea><br><br>
 
-    <label>Upload Images (max 5MB each):</label><br>
-    <input type="file" name="images[]" multiple accept="image/*"><br><br>
+    <label>Upload Images:</label><br>
+    <input type="file" name="images[]" multiple accept="image/*" required><br>
+    <small class="text-muted">Upload 1 to 3 images. Each image must be 1MB or below.</small><br><br>
 
     <button type="submit">Add News</button>
 </form>
@@ -521,6 +570,32 @@ document.addEventListener('DOMContentLoaded', function () {
     const newsForm = document.getElementById('newsForm');
     if (newsForm) {
         newsForm.addEventListener('submit', function (e) {
+            const imageInput = newsForm.querySelector('input[name="images[]"]');
+            const files = imageInput ? Array.from(imageInput.files) : [];
+            const maxSize = 1048576;
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (files.length < 1) {
+                alert('Please upload at least 1 image.');
+                e.preventDefault();
+                return;
+            }
+            if (files.length > 3) {
+                alert('You can upload a maximum of 3 images.');
+                e.preventDefault();
+                return;
+            }
+            for (const file of files) {
+                if (file.size > maxSize) {
+                    alert('Each image must be 1MB or below.');
+                    e.preventDefault();
+                    return;
+                }
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Only JPG, JPEG, PNG, GIF, and WEBP image files are allowed.');
+                    e.preventDefault();
+                    return;
+                }
+            }
             const confirmed = confirm('Are you sure you want to add this news item?');
             if (!confirmed) {
                 e.preventDefault(); // cancel form submission

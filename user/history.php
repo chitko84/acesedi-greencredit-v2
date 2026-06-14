@@ -420,18 +420,17 @@ if ($total_submissions > 0) {
                             ?>
                         </td>
                         <td>
-                            <?php if ($submission['status'] == 'pending'): ?>
+                            <?php if ($submission['status'] == 'pending' || $submission['status'] == 'rejected'): ?>
                                 <div class="d-flex flex-column gap-2">
-                                    <!--No need edit for now-->
-                                    <!--<a href="edit_submission.php?id=<?= $submission['id'] ?>" class="btn btn-sm btn-warning">-->
-                                    <!--    <i class="fas fa-edit"></i> Edit-->
-                                    <!--</a>-->
+                                    <a href="edit_submission.php?id=<?= $submission['id'] ?>" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> <?= $submission['status'] == 'rejected' ? 'Resubmit' : 'Edit' ?>
+                                    </a>
                                     <button class="btn btn-sm btn-danger delete-btn" data-id="<?= $submission['id'] ?>">
                                         <i class="fas fa-trash-alt"></i> Delete
                                     </button>
                                 </div>
                             <?php else: ?>
-                                <span class="text-muted">Cannot edit approved/rejected submissions</span>
+                                <span class="text-muted">Cannot edit approved submissions</span>
                             <?php endif; ?>
                         </td>
                     </tr>

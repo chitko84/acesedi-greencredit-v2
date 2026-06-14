@@ -19,7 +19,7 @@
 
     .admin-footer p {
         margin: 0;
-        color: inherit;
+        color: #000000 !important;
     }
 
     /* Dark Mode Support */
@@ -30,7 +30,7 @@
     }
 
     body.dark-mode .admin-footer p {
-        color: #cccccc;
+        color: #000000 !important;
     }
 
     /* Admin dark UI consolidation: loaded late to override page-level light styles. */

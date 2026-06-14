@@ -7,15 +7,13 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Define super admins (hardcoded user IDs)
-$superAdmins = [47];
-
 // Check if current user is super admin
-$is_superadmin = in_array($_SESSION['user_id'], $superAdmins, true);
+include_once __DIR__ . '/../includes/super_admin.php';
+$is_superadmin = gc_is_super_admin($conn, (int) $_SESSION['user_id']);
 
 // Pagination configuration
-$per_page_param = $_GET['per_page'] ?? '10';
-$allowed_per_page = ['10', '25', '50', '100', 'all'];
+$per_page_param = $_GET['limit'] ?? ($_GET['per_page'] ?? '10');
+$allowed_per_page = ['10', '25', '50', '100', '200', 'all'];
 $per_page_param = in_array($per_page_param, $allowed_per_page, true) ? $per_page_param : '10';
 $results_per_page = (int)($per_page_param === 'all' ? 10 : $per_page_param);
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -99,7 +97,13 @@ $total_pages = $per_page_param === 'all' ? 1 : (int)ceil($total_rows / $results_
 
 // Ensure page doesn't exceed total pages
 if ($page > $total_pages && $total_pages > 0) {
-    header("Location: ?page=" . $total_pages . "&per_page=" . urlencode($per_page_param) . "&sort_by=" . urlencode($sort_by) . "&sort_order=" . urlencode($sort_order));
+    $redirect_params = $_GET;
+    $redirect_params['page'] = $total_pages;
+    $redirect_params['limit'] = $per_page_param;
+    $redirect_params['sort_by'] = $sort_by;
+    $redirect_params['sort_order'] = $sort_order;
+    unset($redirect_params['per_page']);
+    header("Location: ?" . http_build_query($redirect_params));
     exit();
 }
 
@@ -118,13 +122,16 @@ $stmt->execute();
 $submissions_result = $stmt->get_result();
 
 function build_submission_page_link($page) {
+    global $per_page_param;
     $params = $_GET;
     $params['page'] = $page;
+    $params['limit'] = $per_page_param;
+    unset($params['per_page']);
     return '?' . http_build_query($params);
 }
 $submission_return_query = http_build_query([
     'page' => $page,
-    'per_page' => $per_page_param,
+    'limit' => $per_page_param,
     'sort_by' => $sort_by,
     'sort_order' => $sort_order
 ]);
@@ -536,6 +543,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_superadmin && isset($_POST['ad
             font-weight: 500;
             margin-top: .1rem;
         }
+        .submissions-export-csv.btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: .45rem !important;
+            width: auto !important;
+            min-height: 36px !important;
+            padding: .5rem .9rem !important;
+            border: 1px solid #2E8B57 !important;
+            border-radius: 10px !important;
+            background: #fff !important;
+            color: #1f7a49 !important;
+            font-size: .9rem !important;
+            font-weight: 700 !important;
+            line-height: 1.2 !important;
+            text-decoration: none !important;
+            box-shadow: 0 8px 18px rgba(46,139,87,.08) !important;
+            transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, color .18s ease !important;
+        }
+        .submissions-export-csv.btn:hover,
+        .submissions-export-csv.btn:focus {
+            background: #2E8B57 !important;
+            border-color: #2E8B57 !important;
+            color: #fff !important;
+            opacity: 1 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(46,139,87,.18) !important;
+        }
+        .submissions-export-csv.btn i {
+            margin: 0 !important;
+            font-size: .95rem;
+            line-height: 1;
+        }
+        .submission-toolbar-controls {
+            column-gap: 1.25rem !important;
+            row-gap: .75rem !important;
+        }
+        .submission-toolbar-controls form {
+            margin: 0;
+        }
         .evidence-btn { white-space: nowrap; }
         .file-icon { margin-right: 5px; }
         .pagination { justify-content: center; margin-top: 20px; }
@@ -561,6 +608,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_superadmin && isset($_POST['ad
             h2.text-center { font-size: 1.25rem; }
             .table td, .table th { padding: 0.5rem; }
             .pagination .page-item { margin: 0 2px; }
+            .submission-toolbar-controls {
+                align-items: flex-start !important;
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -572,16 +623,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_superadmin && isset($_POST['ad
     <div class="row mb-4 align-items-center">
         <div class="col-md-6">
             <h2 class="mb-0">Manage Submissions</h2>
-            <div class="d-flex gap-2 flex-wrap">
-                <a href="export_csv.php?table=submissions" class="btn btn-outline-success">
-                    <i class="fas fa-file-csv me-1"></i> Export CSV
+            <div class="d-flex align-items-center flex-wrap submission-toolbar-controls">
+                <a href="export_csv.php?table=submissions" class="btn submissions-export-csv">
+                    <i class="fas fa-file-csv"></i> Export CSV
                 </a>
                 <form method="GET" class="d-flex align-items-center gap-2">
                     <input type="hidden" name="sort_by" value="<?= htmlspecialchars($sort_by) ?>">
                     <input type="hidden" name="sort_order" value="<?= htmlspecialchars($sort_order) ?>">
-                    <label for="per_page" class="mb-0 fw-semibold">Rows</label>
-                    <select id="per_page" name="per_page" class="form-select" onchange="this.form.submit()">
-                        <?php foreach (['10','25','50','100','all'] as $option): ?>
+                    <label for="limit" class="mb-0 fw-semibold">Rows per page</label>
+                    <select id="limit" name="limit" class="form-select" onchange="this.form.submit()">
+                        <?php foreach (['10','25','50','100','200','all'] as $option): ?>
                             <option value="<?= $option ?>" <?= $per_page_param === $option ? 'selected' : '' ?>><?= $option === 'all' ? 'All rows' : $option . ' rows' ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -607,7 +658,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_superadmin && isset($_POST['ad
                 <h5 class="mb-1"><i class="fas fa-arrow-up-wide-short me-2 text-success"></i>Sort Submissions</h5>
                 <div class="text-muted small">Sorts the full submissions list before pagination.</div>
             </div>
-            <a class="btn btn-sm btn-outline-secondary" href="submissions.php?per_page=<?= urlencode($per_page_param) ?>">
+            <a class="btn btn-sm btn-outline-secondary" href="submissions.php?limit=<?= urlencode($per_page_param) ?>">
                 <i class="fas fa-rotate-left me-1"></i> Reset
             </a>
         </div>
@@ -618,7 +669,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_superadmin && isset($_POST['ad
                     <?php foreach ($sort_group['items'] as $option):
                         [$option_by, $option_order, $option_title, $option_hint, $option_icon] = $option;
                         $is_active = ($sort_by === $option_by && $sort_order === $option_order);
-                        $url = '?sort_by=' . urlencode($option_by) . '&sort_order=' . urlencode($option_order) . '&per_page=' . urlencode($per_page_param);
+                        $url = '?sort_by=' . urlencode($option_by) . '&sort_order=' . urlencode($option_order) . '&limit=' . urlencode($per_page_param);
                     ?>
                         <a class="sort-chip <?= $is_active ? 'active' : '' ?>" href="<?= $url ?>">
                             <i class="fas <?= htmlspecialchars($option_icon) ?>"></i>

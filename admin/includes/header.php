@@ -213,16 +213,27 @@ if (isset($conn) && $conn instanceof mysqli) {
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
                         <li><a class="dropdown-item" href="admin_news.php">Update News</a></li>
                         <li><a class="dropdown-item" href="add_admin.php">Add Admin</a></li>
+                        <?php
+                            include_once __DIR__ . '/../../includes/super_admin.php';
+                            if (isset($_SESSION['user_id']) && gc_is_super_admin($conn, (int) $_SESSION['user_id'])):
+                        ?>
+                            <li><a class="dropdown-item" href="manage_superadmins.php">Manage Super Admins</a></li>
+                        <?php endif; ?>
                         <li><a class="dropdown-item" href="manageuser.php">Manage Users</a></li>
                         <li><a class="dropdown-item" href="message.php">Message User</a></li>
+                        <li><a class="dropdown-item" href="backup.php">Backup</a></li>
                     </ul>
                 </li>
 
+                <?php
+                    include_once __DIR__ . '/../../includes/profile_image.php';
+                    $profilePicSrc = gc_profile_image_src($_SESSION['profile_pic'] ?? '');
+                ?>
                 <!-- Profile Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="adminProfileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="../uploads/<?php echo (empty($_SESSION['profile_pic']) || $_SESSION['profile_pic'] == 'default-profile.jpg') ? 'default-profile.jpg' : $_SESSION['profile_pic']; ?>" 
-                             alt="Profile Picture" class="rounded-circle" width="40" height="40">
+                        <img src="<?php echo htmlspecialchars($profilePicSrc); ?>" 
+                             alt="Profile Picture" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminProfileDropdown">
                         <li class="dropdown-item">

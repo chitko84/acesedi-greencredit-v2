@@ -212,11 +212,15 @@
                 </li>
             </ul>
             
+            <?php
+                include_once __DIR__ . '/../../includes/profile_image.php';
+                $profilePicSrc = gc_profile_image_src($_SESSION['profile_pic'] ?? '');
+            ?>
             <ul class="navbar-nav ms-3">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="../uploads/<?php echo (empty($_SESSION['profile_pic']) || $_SESSION['profile_pic'] == 'default-profile.jpg') ? 'default-profile.jpg' : $_SESSION['profile_pic']; ?>" 
-                        alt="Profile Picture" class="rounded-circle" width="40" height="40">
+                        <img src="<?php echo htmlspecialchars($profilePicSrc); ?>" 
+                        alt="Profile Picture" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                         <li class="dropdown-item">

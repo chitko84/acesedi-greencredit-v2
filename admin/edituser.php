@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Password validation: at least 8 characters, contains letters, numbers, and special characters
-    $password_pattern = "/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/";
+    // Password validation: at least 8 characters, contains letters, numbers, and any non-alphanumeric special character
+    $password_pattern = "/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/";
     if (!empty($password) && !preg_match($password_pattern, $password)) {
         $_SESSION['error'] = "Password must be at least 8 characters long and contain letters, numbers, and special characters.";
         header('Location: edituser.php?id=' . $user_id); // Stay on the edit page
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Password validation function
     function validatePassword() {
         var password = document.getElementById('password').value;
-        var passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        var passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
         var errorDiv = document.getElementById('password-error');
 
         if (password && !passwordPattern.test(password)) {

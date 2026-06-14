@@ -4,6 +4,18 @@ session_start();
 
 // Check if the email already exists
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $_SESSION['register_old'] = array_intersect_key($_POST, array_flip([
+        'name',
+        'date_of_birth',
+        'phone_number',
+        'email',
+        'department',
+        'program_of_study',
+        'intake',
+        'country',
+        'gender',
+        'expected_graduation_year'
+    ]));
 
     // Get and trim email
     $email = trim($_POST['email'] ?? '');
@@ -57,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    // Validate password (at least 8 characters, must contain letters, numbers, and special characters)
-    if (!preg_match('/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', $password)) {
+    // Validate password (at least 8 characters, must contain letters, numbers, and any non-alphanumeric special character)
+    if (!preg_match('/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/', $password)) {
         $_SESSION['error'] = "Password must be at least 8 characters long and contain letters, numbers, and special characters.";
         header('Location: register.php');
         exit();
@@ -213,10 +225,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             $_SESSION['success'] = "Registration successful! You can now log in. (Email notifications failed)";
         }
+        unset($_SESSION['register_old']);
     
         header('Location: login.php');
         exit();
     }
+}
+
+$register_old = $_SESSION['register_old'] ?? [];
+function register_old_value($field) {
+    global $register_old;
+    return htmlspecialchars($register_old[$field] ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+function register_old_selected($field, $value) {
+    global $register_old;
+    return (($register_old[$field] ?? '') === $value) ? 'selected' : '';
 }
 ?>
 
@@ -243,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     body {
         font-family: 'Poppins', sans-serif;
-        background: url('assets/images/cfgs-pic.jpg') center center / cover no-repeat fixed;
+        background: url('assets/images/cfgs-pic.jpg') center center / cover no-repeat fixed !important;
         color: var(--text-gray);
         min-height: 100vh;
         display: flex;
@@ -528,7 +552,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <?php if (isset($_SESSION['error'])): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <?= $_SESSION['error'] ?>
+                    <?= htmlspecialchars($_SESSION['error'], ENT_QUOTES, 'UTF-8') ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 <?php unset($_SESSION['error']); ?>
@@ -536,18 +560,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             <?php if (isset($_SESSION['success'])): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <?= $_SESSION['success'] ?>
+                    <?= htmlspecialchars($_SESSION['success'], ENT_QUOTES, 'UTF-8') ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 <?php unset($_SESSION['success']); ?>
             <?php endif; ?>
 
-            <form action="register.php" method="POST" enctype="multipart/form-data">
+            <form action="register.php" method="POST" enctype="multipart/form-data" id="registerForm">
                 <div class="mb-4">
                     <label for="name" class="form-label">Full Name</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name" required>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name" value="<?= register_old_value('name') ?>" required>
                     </div>
                 </div>
 
@@ -555,7 +579,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="date_of_birth" class="form-label">Date of Birth</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                        <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                        <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" value="<?= register_old_value('date_of_birth') ?>" required>
                     </div>
                 </div>
 
@@ -563,7 +587,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="phone_number" class="form-label">Phone Number</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
-                        <input type="text" class="form-control" id="phone_number" name="phone_number" placeholder="01123456789" required>
+                        <input type="text" class="form-control" id="phone_number" name="phone_number" placeholder="01123456789" value="<?= register_old_value('phone_number') ?>" required>
                     </div>
                 </div>
 
@@ -571,7 +595,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="email" class="form-label">Email Address <strong style="color:red;">(@student.aiu.edu.my or @aiu.edu.my only)</strong></label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
-                        <input type="email" class="form-control" id="email" name="email" placeholder="your@student.aiu.edu.my" pattern="^[A-Za-z0-9._%+\-]+@(student\.aiu\.edu\.my|aiu\.edu\.my)$" title="Use an email ending with @student.aiu.edu.my or @aiu.edu.my" required>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="your@student.aiu.edu.my" value="<?= register_old_value('email') ?>" pattern="^[A-Za-z0-9._%+\-]+@(student\.aiu\.edu\.my|aiu\.edu\.my)$" title="Use an email ending with @student.aiu.edu.my or @aiu.edu.my" required>
                     </div>
                     <small class="form-text">Only official AIU email addresses are accepted.</small>
                 </div>
@@ -581,11 +605,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="department" class="form-label">Department</label>
                     <select class="form-control" id="department" name="department" required>
                         <option value="">-- Select Department --</option>
-                        <option value="School Of Business & Social Sciences">School of Business & Social Sciences</option>
-                        <option value="School Of Education & Human Sciences">School of Education & Human Sciences</option>
-                        <option value="School Of Computing and Informatics">School of Computing and Informatics</option>
-                        <option value="Centre for Foundation and General Studies">Centre for Foundation and General Studies</option>
-                        <option value="Language Center (LC)">Language Center (LC)</option>
+                        <option value="School Of Business & Social Sciences" <?= register_old_selected('department', 'School Of Business & Social Sciences') ?>>School of Business & Social Sciences</option>
+                        <option value="School Of Education & Human Sciences" <?= register_old_selected('department', 'School Of Education & Human Sciences') ?>>School of Education & Human Sciences</option>
+                        <option value="School Of Computing and Informatics" <?= register_old_selected('department', 'School Of Computing and Informatics') ?>>School of Computing and Informatics</option>
+                        <option value="Centre for Foundation and General Studies" <?= register_old_selected('department', 'Centre for Foundation and General Studies') ?>>Centre for Foundation and General Studies</option>
+                        <option value="Language Center (LC)" <?= register_old_selected('department', 'Language Center (LC)') ?>>Language Center (LC)</option>
                     </select>
                 </div>
                 
@@ -608,7 +632,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <!-- Country -->
                 <div class="mb-4">
                     <label for="country" class="form-label">Country of Origin</label>
-                    <input list="countryList" class="form-control" id="country" name="country" placeholder="Type to search..." required>
+                    <input list="countryList" class="form-control" id="country" name="country" placeholder="Type to search..." value="<?= register_old_value('country') ?>" required>
                     <datalist id="countryList">
                     </datalist>
                 </div>
@@ -618,8 +642,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="gender" class="form-label">Gender</label>
                     <select class="form-control" id="gender" name="gender" required>
                         <option value="">-- Select Gender --</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
+                        <option value="Male" <?= register_old_selected('gender', 'Male') ?>>Male</option>
+                        <option value="Female" <?= register_old_selected('gender', 'Female') ?>>Female</option>
                     </select>
                 </div>
                 
@@ -733,6 +757,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         });
 
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            const password = document.getElementById('password').value;
+            const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+            if (!passwordPattern.test(password)) {
+                alert('Password must be at least 8 characters long and contain letters, numbers, and special characters.');
+                event.preventDefault();
+            }
+        });
+
         // Profile picture preview
         const profilePicInput = document.getElementById('profile_pic');
         if (profilePicInput) profilePicInput.addEventListener('change', function(e) {
@@ -773,6 +806,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </script>
 
     <script>
+        const oldDepartment = <?= json_encode($register_old['department'] ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+        const oldProgram = <?= json_encode($register_old['program_of_study'] ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+        const oldIntake = <?= json_encode($register_old['intake'] ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+        const oldGraduationYear = <?= json_encode($register_old['expected_graduation_year'] ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
         const programsByDept = {
             "School Of Business & Social Sciences": [
                 "Bachelor of Business Administration (Honours)",
@@ -836,6 +874,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         });
 
         // Intake options: March/October 2020 → 2031
+        if (oldDepartment) {
+            const departmentSelect = document.getElementById('department');
+            departmentSelect.value = oldDepartment;
+            departmentSelect.dispatchEvent(new Event('change'));
+            if (oldProgram) {
+                document.getElementById('program_of_study').value = oldProgram;
+            }
+        }
+
         const intakeSelect = document.getElementById('intake');
         for (let year = 2020; year <= 2031; year++) {
             ["March", "October"].forEach(month => {
@@ -844,6 +891,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 opt.textContent = `${month} ${year}`;
                 intakeSelect.appendChild(opt);
             });
+        }
+        if (oldIntake) {
+            intakeSelect.value = oldIntake;
         }
 
         // Country list (shortened for brevity)
@@ -884,6 +934,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             opt.value = y;
             opt.textContent = y;
             gradSelect.appendChild(opt);
+        }
+        if (oldGraduationYear) {
+            gradSelect.value = oldGraduationYear;
         }
         
         document.addEventListener('click', function (event) {
